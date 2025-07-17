@@ -14,4 +14,6 @@ routes.get('/books/:bookId/reviews', ReviewController.index);
 // Rota para criar uma nova avaliação para um livro (protegida)
 routes.post('/books/:bookId/reviews', authMiddleware, ReviewController.store);
 
+routes.get('/reviews/my-reviews', authMiddleware, ReviewController.showMyReviews);
+
 module.exports = routes;

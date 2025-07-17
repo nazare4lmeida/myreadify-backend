@@ -67,6 +67,25 @@ class ReviewController {
       return res.status(500).json({ error: 'Falha ao listar as avaliações.' });
     }
   }
+
+  async showMyReviews(req, res) {
+  const userId = req.userId;
+  try {
+    const reviews = await Review.findAll({
+      where: { user_id: userId },
+      include: { // Inclui os dados do livro avaliado
+        model: Book,
+        as: 'book',
+        attributes: ['id', 'title', 'cover_url'],
+      },
+      order: [['created_at', 'DESC']],
+    });
+    return res.json(reviews);
+  } catch (err) {
+    return res.status(500).json({ error: 'Falha ao buscar suas avaliações.' });
+  }
+}
+
 }
 
 module.exports = new ReviewController();
