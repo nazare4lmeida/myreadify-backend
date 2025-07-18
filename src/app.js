@@ -9,6 +9,8 @@ require('./database');
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const checkAuthRoutes = require('./routes/checkAuthRoutes');
+
 
 class App {
   constructor() {
@@ -38,6 +40,7 @@ class App {
     this.server.use('/api', authRoutes);
     this.server.use('/api', bookRoutes);
     this.server.use('/api', reviewRoutes);
+    this.server.use('/api', checkAuthRoutes);
   }
 }
 
