@@ -1,58 +1,77 @@
-// src/controllers/BookController.js
 const Book = require('../models/Book');
-const User = require('../models/User');
 
 class BookController {
-  // --- CREATE: Enviar um novo resumo (Rota Protegida) ---
+  /**
+   * store: Método para um usuário autenticado enviar um novo livro.
+   * O livro é salvo com status 'PENDING' e o ID do usuário.
+   */
   async store(req, res) {
-    const { title, author, category, cover_url, summary } = req.body;
-    // O ID do usuário vem do nosso middleware de autenticação
-    const submitted_by = req.userId; 
+    const { title, author, category, summary } = req.body;
+    // Validação para garantir que o arquivo foi enviado
+    if (!req.file) {
+      return res.status(400).json({ error: 'A imagem de capa é obrigatória.' });
+    }
+    const { filename: cover_path } = req.file; // Pega o nome do arquivo do multer
+    const submitted_by = req.userId; // Pega o ID do usuário do middleware de autenticação
 
     try {
       const book = await Book.create({
         title,
         author,
         category,
-        cover_url,
+        cover_path, // Salva o caminho do arquivo no banco de dados
         summary,
         submitted_by,
-        status: 'PENDING', // Todo novo envio começa como pendente
+        status: 'PENDING', // Status inicial é sempre pendente
       });
-
       return res.status(201).json(book);
     } catch (err) {
-      console.error(err);
+      console.error('Erro ao criar o livro:', err);
       return res.status(500).json({ error: 'Falha ao enviar o resumo.' });
     }
   }
 
-  // --- READ (All): Listar todos os resumos APROVADOS (Rota Pública) ---
+  /**
+   * listMyBooks: Lista todos os livros enviados pelo usuário logado.
+   */
+  async listMyBooks(req, res) {
+    try {
+      const books = await Book.findAll({
+        where: { submitted_by: req.userId },
+        order: [['created_at', 'DESC']],
+      });
+      return res.json(books);
+    } catch (err) {
+      console.error('Erro ao buscar "meus livros":', err);
+      return res.status(500).json({ error: 'Falha ao buscar seus envios.' });
+    }
+  }
+
+  // --- Métodos Públicos (não precisam de autenticação) ---
+
+  /**
+   * index: Lista todos os livros com status 'APPROVED' para o público geral.
+   */
   async index(req, res) {
     try {
       const books = await Book.findAll({
         where: { status: 'APPROVED' },
-        include: { // Inclui os dados do usuário que enviou
-          model: User,
-          as: 'submitter',
-          attributes: ['id', 'name'], // Pega apenas o ID e o nome do usuário
-        },
-        order: [['created_at', 'DESC']], // Mais recentes primeiro
+        order: [['title', 'ASC']],
       });
-
       return res.json(books);
     } catch (err) {
-      return res.status(500).json({ error: 'Não foi possível listar os livros.' });
+      return res.status(500).json({ error: 'Falha ao buscar os livros.' });
     }
   }
 
-  // --- READ (One): Ver um resumo específico APROVADO (Rota Pública) ---
+  /**
+   * show: Exibe os detalhes de um livro específico que esteja 'APPROVED'.
+   */
   async show(req, res) {
     try {
       const { id } = req.params;
       const book = await Book.findOne({
         where: { id, status: 'APPROVED' },
-        include: { model: User, as: 'submitter', attributes: ['id', 'name'] },
       });
 
       if (!book) {
@@ -61,70 +80,24 @@ class BookController {
 
       return res.json(book);
     } catch (err) {
-      return res.status(500).json({ error: 'Falha ao buscar o livro.' });
+      return res.status(500).json({ error: 'Falha ao buscar detalhes do livro.' });
     }
   }
+
+
+  // --- Métodos de Admin (requerem autenticação e permissão de admin) ---
 
   async update(req, res) {
-  const { id } = req.params;
-  // Pegamos os campos que podem ser atualizados do corpo da requisição
-  const { title, author, category, summary, cover_url } = req.body;
-
-  try {
-    const book = await Book.findByPk(id);
-
-    if (!book) {
-      return res.status(404).json({ error: 'Livro não encontrado.' });
-    }
-
-    // Atualiza o livro com os novos dados
-    await book.update({ title, author, category, summary, cover_url });
-
-    return res.json(book); // Retorna o livro com os dados atualizados
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Falha ao atualizar o livro.' });
-  }
-}
-
-  // --- UPDATE: Aprovar um livro (Rota de Admin) ---
-  async approve(req, res) {
-    try {
-      const { id } = req.params;
-      const book = await Book.findByPk(id);
-
-      if (!book) {
-        return res.status(404).json({ error: 'Livro não encontrado.' });
-      }
-
-      book.status = 'APPROVED';
-      await book.save();
-
-      return res.json(book);
-    } catch (err) {
-      return res.status(500).json({ error: 'Falha ao aprovar o livro.' });
-    }
+    return res.status(501).json({ message: 'Funcionalidade de update ainda não implementada.' });
   }
 
   async delete(req, res) {
-  try {
-    const { id } = req.params;
-    const book = await Book.findByPk(id);
-
-    if (!book) {
-      return res.status(404).json({ error: 'Livro não encontrado.' });
-    }
-
-    await book.destroy();
-
-    // 204 No Content: Resposta padrão para sucesso em requisições de delete sem corpo de resposta.
-    return res.status(204).send();
-
-  } catch (err) {
-    return res.status(500).json({ error: 'Falha ao deletar o livro.' });
+     return res.status(501).json({ message: 'Funcionalidade de delete ainda não implementada.' });
   }
-}
 
+  async approve(req, res) {
+    return res.status(501).json({ message: 'Funcionalidade de aprovação ainda não implementada.' });
+  }
 }
 
 module.exports = new BookController();

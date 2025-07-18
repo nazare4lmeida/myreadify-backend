@@ -14,6 +14,7 @@ User.init(connection);
 Book.init(connection);
 Review.init(connection);
 
+// Este loop inteligente já vai encontrar e executar o método .associate do seu novo modelo Summary
 Object.values(connection.models)
   .filter(model => typeof model.associate === 'function')
   .forEach(model => model.associate(connection.models));
