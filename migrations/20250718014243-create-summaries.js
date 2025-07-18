@@ -6,7 +6,7 @@ module.exports = {
       title: { type: Sequelize.STRING, allowNull: false },
       author: { type: Sequelize.STRING, allowNull: false },
       content: { type: Sequelize.TEXT, allowNull: false },
-      cover_path: { type: Sequelize.STRING, allowNull: false },
+      cover_url: { type: Sequelize.STRING, allowNull: false },
       status: { type: Sequelize.ENUM('PENDING', 'APPROVED', 'REJECTED'), allowNull: false, defaultValue: 'PENDING' },
       user_id: {
         type: Sequelize.INTEGER,

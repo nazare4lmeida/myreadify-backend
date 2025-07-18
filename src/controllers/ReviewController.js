@@ -1,32 +1,28 @@
-// src/controllers/ReviewController.js
 const Review = require('../models/Review');
 const Book = require('../models/Book');
 const User = require('../models/User');
 
 class ReviewController {
-  // --- CREATE: Adicionar uma nova avaliação a um livro (Rota Protegida) ---
+  // --- CREATE: Adicionar uma nova avaliação a um livro ---
   async store(req, res) {
-    const { bookId } = req.params; // Pega o ID do livro da URL
+    const { bookId } = req.params;
     const { rating, comment } = req.body;
-    const userId = req.userId; // Pega o ID do usuário do token (via middleware)
+    const userId = req.userId;
 
     try {
-      // 1. Verifica se o livro existe
       const book = await Book.findByPk(bookId);
       if (!book) {
         return res.status(404).json({ error: 'Livro não encontrado.' });
       }
 
-      // 2. Impede que um usuário avalie o mesmo livro duas vezes
       const existingReview = await Review.findOne({
         where: { user_id: userId, book_id: bookId },
       });
 
       if (existingReview) {
-        return res.status(403).json({ error: 'Você já avaliou este livro.' });
+        return res.status(409).json({ error: 'Você já avaliou este livro.' });
       }
 
-      // 3. Cria a avaliação no banco de dados
       const review = await Review.create({
         rating,
         comment,
@@ -34,58 +30,110 @@ class ReviewController {
         book_id: bookId,
       });
 
-      return res.status(201).json(review);
+      // Retorna a avaliação recém-criada com os dados do usuário
+      const createdReview = await Review.findByPk(review.id, {
+        include: { model: User, as: 'user', attributes: ['id', 'name'] },
+      });
+
+      return res.status(201).json(createdReview);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ error: 'Falha ao criar a avaliação.' });
     }
   }
 
-  // --- READ: Listar todas as avaliações de um livro específico (Rota Pública) ---
+  // --- READ: Listar todas as avaliações de um livro ---
   async index(req, res) {
     const { bookId } = req.params;
-
     try {
-      // Verifica se o livro existe para não listar avaliações de um livro deletado
       const book = await Book.findByPk(bookId);
       if (!book) {
         return res.status(404).json({ error: 'Livro não encontrado.' });
       }
-
       const reviews = await Review.findAll({
         where: { book_id: bookId },
-        order: [['created_at', 'DESC']], // Mais recentes primeiro
-        include: { // Inclui os dados do usuário que fez a avaliação
+        order: [['created_at', 'DESC']],
+        include: {
           model: User,
           as: 'user',
-          attributes: ['id', 'name'], // Pega apenas o ID e o nome para não expor dados sensíveis
+          attributes: ['id', 'name'],
         },
       });
-
       return res.json(reviews);
     } catch (err) {
       return res.status(500).json({ error: 'Falha ao listar as avaliações.' });
     }
   }
 
+  // --- READ: Listar minhas próprias avaliações ---
   async showMyReviews(req, res) {
-  const userId = req.userId;
-  try {
-    const reviews = await Review.findAll({
-      where: { user_id: userId },
-      include: { // Inclui os dados do livro avaliado
-        model: Book,
-        as: 'book',
-        attributes: ['id', 'title', 'cover_url'],
-      },
-      order: [['created_at', 'DESC']],
-    });
-    return res.json(reviews);
-  } catch (err) {
-    return res.status(500).json({ error: 'Falha ao buscar suas avaliações.' });
+    const userId = req.userId;
+    try {
+      const reviews = await Review.findAll({
+        where: { user_id: userId },
+        include: {
+          model: Book,
+          as: 'book',
+          attributes: ['id', 'title', 'cover_url'],
+        },
+        order: [['created_at', 'DESC']],
+      });
+      return res.json(reviews);
+    } catch (err) {
+      return res.status(500).json({ error: 'Falha ao buscar suas avaliações.' });
+    }
   }
-}
 
+  // --- UPDATE: Editar uma avaliação existente ---
+  async update(req, res) {
+    const { reviewId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.userId;
+
+    try {
+      const review = await Review.findByPk(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Avaliação não encontrada.' });
+      }
+
+      if (review.user_id !== userId) {
+        return res.status(403).json({ error: 'Você não tem permissão para editar esta avaliação.' });
+      }
+
+      await review.update({ rating, comment });
+
+      const updatedReview = await Review.findByPk(reviewId, {
+        include: { model: User, as: 'user', attributes: ['id', 'name'] },
+      });
+
+      return res.json(updatedReview);
+    } catch (err) {
+      return res.status(500).json({ error: 'Falha ao atualizar a avaliação.' });
+    }
+  }
+
+  // --- DELETE: Deletar uma avaliação existente ---
+  async destroy(req, res) {
+    const { reviewId } = req.params;
+    const userId = req.userId;
+
+    try {
+      const review = await Review.findByPk(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Avaliação não encontrada.' });
+      }
+
+      if (review.user_id !== userId) {
+        return res.status(403).json({ error: 'Você não tem permissão para deletar esta avaliação.' });
+      }
+
+      await review.destroy();
+
+      return res.status(204).send();
+    } catch (err) {
+      return res.status(500).json({ error: 'Falha ao deletar a avaliação.' });
+    }
+  }
 }
 
 module.exports = new ReviewController();

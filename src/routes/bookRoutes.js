@@ -21,14 +21,4 @@ routes.post('/books', authMiddleware, upload.single('coverImage'), BookControlle
 // Rota para o usuário listar apenas os seus próprios envios
 routes.get('/my-books', authMiddleware, BookController.listMyBooks);
 
-
-// --- Rotas de Admin ---
-// Atualiza um livro (requer admin)
-routes.put('/books/:id', authMiddleware, adminMiddleware, BookController.update);
-// Aprova um livro (requer admin)
-routes.patch('/books/:id/approve', authMiddleware, adminMiddleware, BookController.approve);
-// Deleta um livro (requer admin)
-routes.delete('/books/:id', authMiddleware, adminMiddleware, BookController.delete);
-
-
 module.exports = routes;

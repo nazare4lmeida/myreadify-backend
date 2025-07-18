@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const checkAuthRoutes = require('./routes/checkAuthRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 
 class App {
@@ -41,6 +42,7 @@ class App {
     this.server.use('/api', bookRoutes);
     this.server.use('/api', reviewRoutes);
     this.server.use('/api', checkAuthRoutes);
+    this.server.use('/api', adminRoutes);
   }
 }
 

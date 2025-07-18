@@ -11,7 +11,7 @@ class BookController {
     if (!req.file) {
       return res.status(400).json({ error: 'A imagem de capa é obrigatória.' });
     }
-    const { filename: cover_path } = req.file; // Pega o nome do arquivo do multer
+    const { filename: cover_url } = req.file; // Pega o nome do arquivo do multer
     const submitted_by = req.userId; // Pega o ID do usuário do middleware de autenticação
 
     try {
@@ -19,7 +19,7 @@ class BookController {
         title,
         author,
         category,
-        cover_path, // Salva o caminho do arquivo no banco de dados
+        cover_url, // Salva o caminho do arquivo no banco de dados
         summary,
         submitted_by,
         status: 'PENDING', // Status inicial é sempre pendente
@@ -71,11 +71,26 @@ class BookController {
     try {
       const { id } = req.params;
       const book = await Book.findOne({
-        where: { id, status: 'APPROVED' },
+        where: { id }, // Pode mostrar qualquer livro, mesmo pendente, se o admin acessar pela URL
+        
+        // MUDANÇA: Adicionamos o 'include' para buscar os dados do usuário.
+        include: {
+          model: require('../models/User'), // Importa o model User
+          as: 'submitter', // Usa o alias da sua associação
+          attributes: ['name'], // Pega apenas o nome do usuário
+        }
       });
 
       if (!book) {
-        return res.status(404).json({ error: 'Livro não encontrado ou não aprovado.' });
+        return res.status(404).json({ error: 'Livro não encontrado.' });
+      }
+
+      // Garante que apenas livros aprovados sejam vistos pelo público geral
+      // (mas um link direto pode funcionar para o admin, por exemplo)
+      if (book.status !== 'APPROVED') {
+         // Você pode decidir o que fazer aqui: mostrar um erro 403 (proibido) ou 404.
+         // Para o público geral, 404 é mais comum.
+         return res.status(404).json({ error: 'Livro não encontrado ou não aprovado.' });
       }
 
       return res.json(book);
@@ -83,21 +98,6 @@ class BookController {
       return res.status(500).json({ error: 'Falha ao buscar detalhes do livro.' });
     }
   }
-
-
-  // --- Métodos de Admin (requerem autenticação e permissão de admin) ---
-
-  async update(req, res) {
-    return res.status(501).json({ message: 'Funcionalidade de update ainda não implementada.' });
-  }
-
-  async delete(req, res) {
-     return res.status(501).json({ message: 'Funcionalidade de delete ainda não implementada.' });
-  }
-
-  async approve(req, res) {
-    return res.status(501).json({ message: 'Funcionalidade de aprovação ainda não implementada.' });
-  }
-}
+ }
 
 module.exports = new BookController();
