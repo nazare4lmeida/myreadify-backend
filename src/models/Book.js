@@ -1,7 +1,7 @@
 // src/models/Book.js
 
 const { Model, DataTypes } = require('sequelize');
-const slugify = require('slugify'); // Importe a biblioteca
+const slugify = require('slugify');
 
 class Book extends Model {
   static init(sequelize) {
@@ -15,7 +15,6 @@ class Book extends Model {
         type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED'),
         defaultValue: 'PENDING',
       },
-      // --- Adicionamos o novo campo slug ---
       slug: {
         type: DataTypes.STRING,
         unique: true,
@@ -28,18 +27,33 @@ class Book extends Model {
       }
     }, {
       sequelize,
-      // --- Adicionamos os Hooks aqui ---
-      hooks: {
-        beforeValidate: (book, options) => {
-          if (book.title) {
-            // Gera o slug a partir do título
-            book.slug = slugify(book.title, { 
-              lower: true,      // Converte para minúsculas
-              strict: true,     // Remove caracteres especiais
-              remove: /[*+~.()'"!:@]/g // Remove caracteres adicionais que podem causar problemas
-            });
-          }
+    });
+
+    // --- HOOK CORRIGIDO ---
+    // Usamos 'addHook' para adicionar a lógica.
+    // Trocamos 'beforeValidate' por 'beforeCreate' para rodar apenas na criação do livro.
+    this.addHook('beforeCreate', async (book) => {
+      if (book.title) {
+        const slugifyOptions = {
+          lower: true,
+          strict: true,
+          remove: /[*+~.()'"!:@]/g
+        };
+
+        const baseSlug = slugify(book.title, slugifyOptions);
+        let slug = baseSlug;
+        let counter = 1;
+
+        // Loop que verifica se o slug já existe.
+        // `this` aqui se refere ao modelo 'Book'.
+        while (await this.findOne({ where: { slug } })) {
+          // Se existir, adiciona um número ao final e tenta de novo.
+          slug = `${baseSlug}-${counter}`;
+          counter++;
         }
+
+        // Atribui o slug final e único ao livro que será criado.
+        book.slug = slug;
       }
     });
   }
