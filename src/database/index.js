@@ -1,4 +1,3 @@
-// src/database/index.js
 const Sequelize = require('sequelize');
 const dbConfig = require('../config/database');
 
@@ -6,6 +5,7 @@ const dbConfig = require('../config/database');
 const User = require('../models/User');
 const Book = require('../models/Book');
 const Review = require('../models/Review');
+const Message = require('../models/Message');
 
 const connection = new Sequelize(dbConfig);
 
@@ -13,8 +13,9 @@ const connection = new Sequelize(dbConfig);
 User.init(connection);
 Book.init(connection);
 Review.init(connection);
+Message.init(connection);
 
-// Este loop inteligente já vai encontrar e executar o método .associate do seu novo modelo Summary
+// Associações
 Object.values(connection.models)
   .filter(model => typeof model.associate === 'function')
   .forEach(model => model.associate(connection.models));

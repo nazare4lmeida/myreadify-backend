@@ -8,8 +8,9 @@ module.exports = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   define: {
-    timestamps: true, // Cria os campos `createdAt` e `updatedAt` automaticamente
-    underscored: true, // Converte camelCase para snake_case nas colunas do DB
+    timestamps: true,
+    underscored: true,
     underscoredAll: true,
   },
 };
+  
