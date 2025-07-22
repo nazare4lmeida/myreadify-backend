@@ -1,9 +1,10 @@
-// src/app.js
+// src/app.js - COM ROTA DE DIAGNÓSTICO
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('./database');
+const sequelize = require('./database'); // <-- 1. IMPORTAÇÃO ADICIONADA
 
 // Importe todas as suas rotas
 const authRoutes = require('./routes/authRoutes');
@@ -11,7 +12,7 @@ const bookRoutes = require('./routes/bookRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const checkAuthRoutes = require('./routes/checkAuthRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const contactRoutes = require('./routes/contactRoutes'); // <-- Sua rota de contato
+const contactRoutes = require('./routes/contactRoutes');
 
 class App {
   constructor() {
@@ -30,18 +31,30 @@ class App {
   }
 
   routes() {
+    // --- ROTA DE DIAGNÓSTICO (NOVA) ---
+    this.server.get('/health-check', async (req, res) => {
+      try {
+        await sequelize.authenticate();
+        res.json({ status: 'ok', message: 'Conexão com o banco de dados bem-sucedida!' });
+      } catch (error) {
+        console.error('FALHA NA CONEXÃO COM O BANCO:', error);
+        res.status(500).json({
+          status: 'error',
+          message: 'Falha ao conectar com o banco de dados.',
+          errorName: error.name,
+          errorMessage: error.message,
+        });
+      }
+    });
+    // ------------------------------------
+
     this.server.get('/', (req, res) => {
         res.json({ message: 'API MyReadify está no ar!' });
     });
         
-    // --- ROTAS PÚBLICAS (ou com partes públicas) ---
-    // Estas não exigem token para todas as suas funcionalidades.
-    this.server.use('/api', authRoutes);      // Login/Registro
-    this.server.use('/api', contactRoutes);   // <-- CORREÇÃO: Movido para cá. Agora é processado antes das rotas privadas.
-    this.server.use('/api', bookRoutes);      // Listar/ver livros
-
-    // --- ROTAS PRIVADAS ---
-    // Estas rotas geralmente exigem um token de autenticação.
+    this.server.use('/api', authRoutes);
+    this.server.use('/api', contactRoutes);
+    this.server.use('/api', bookRoutes);
     this.server.use('/api', reviewRoutes);
     this.server.use('/api', checkAuthRoutes);
     this.server.use('/api', adminRoutes);
