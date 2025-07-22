@@ -1,10 +1,7 @@
-// src/controllers/MessageController.js
-
 const Message = require('../models/Message');
 const nodemailer = require('nodemailer');
 
 class MessageController {
-  // ... (seu método 'index' para listar mensagens continua igual)
   async index(req, res) {
     try {
       const messages = await Message.findAll({
@@ -17,7 +14,6 @@ class MessageController {
     }
   }
   
-  // --- NOVO MÉTODO PARA DELETAR MENSAGEM ---
   async destroy(req, res) {
     const { messageId } = req.params;
     try {
@@ -26,14 +22,13 @@ class MessageController {
         return res.status(404).json({ error: 'Mensagem não encontrada.' });
       }
       await message.destroy();
-      return res.status(204).send(); // Sucesso, sem conteúdo para retornar
+      return res.status(204).send(); 
     } catch (error) {
       console.error('Erro ao deletar mensagem:', error);
       return res.status(500).json({ error: 'Erro interno do servidor.' });
     }
   }
 
-  // --- NOVO MÉTODO PARA RESPONDER MENSAGEM ---
   async reply(req, res) {
     const { messageId } = req.params;
     const { replyText } = req.body;
@@ -47,7 +42,7 @@ class MessageController {
       const transporter = nodemailer.createTransport({
         host: process.env.MAIL_HOST,
         port: process.env.MAIL_PORT,
-        secure: true, // true para a porta 465
+        secure: true, 
         auth: {
           user: process.env.MAIL_USER,
           pass: process.env.MAIL_PASS,
@@ -70,7 +65,6 @@ class MessageController {
         `,
       });
 
-      // Marca a mensagem como lida após responder
       originalMessage.is_read = true;
       await originalMessage.save();
 

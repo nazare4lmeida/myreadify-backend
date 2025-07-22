@@ -1,11 +1,10 @@
-// No novo arquivo de migration (ex: ...add-slug-to-books.js)
 'use strict';
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addColumn('books', 'slug', {
       type: Sequelize.STRING,
-      allowNull: true, // Temporariamente permite nulos para os livros existentes
+      allowNull: true, 
       unique: true,
     });
   },

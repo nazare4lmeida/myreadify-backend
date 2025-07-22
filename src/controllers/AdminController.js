@@ -1,5 +1,3 @@
-// src/controllers/AdminController.js
-
 const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
@@ -10,7 +8,6 @@ const User = require('../models/User');
 const unlinkAsync = promisify(fs.unlink);
 
 class AdminController {
-  // --- Método para LISTAR resumos pendentes ---
   async listPending(req, res) {
     try {
       const pendingBooks = await Book.findAll({
@@ -28,7 +25,6 @@ class AdminController {
     }
   }
 
-  // --- Método para APROVAR ou RECUSAR ---
   async updateBookStatus(req, res) {
     const { bookId } = req.params;
     const { status } = req.body;
@@ -65,7 +61,6 @@ class AdminController {
     }
   }
 
-  // --- Método para DELETAR um resumo ---
   async deleteBook(req, res) {
     const { bookId } = req.params;
 

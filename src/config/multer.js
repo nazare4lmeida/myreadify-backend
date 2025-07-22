@@ -17,7 +17,7 @@ module.exports = {
     },
   }),
   limits: {
-    fileSize: 2 * 1024 * 1024, // Limite de 2MB
+    fileSize: 2 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/pjpeg', 'image/png'];

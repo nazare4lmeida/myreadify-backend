@@ -3,7 +3,6 @@ const Book = require('../models/Book');
 const User = require('../models/User');
 
 class ReviewController {
-  // --- CREATE: Adicionar uma nova avaliação a um livro ---
   async store(req, res) {
     const { bookId } = req.params;
     const { rating, comment } = req.body;
@@ -30,7 +29,6 @@ class ReviewController {
         book_id: bookId,
       });
 
-      // Retorna a avaliação recém-criada com os dados do usuário
       const createdReview = await Review.findByPk(review.id, {
         include: { model: User, as: 'user', attributes: ['id', 'name'] },
       });
@@ -42,7 +40,6 @@ class ReviewController {
     }
   }
 
-  // --- READ: Listar todas as avaliações de um livro ---
   async index(req, res) {
     const { bookId } = req.params;
     try {
@@ -65,7 +62,6 @@ class ReviewController {
     }
   }
 
-  // --- READ: Listar minhas próprias avaliações ---
   async showMyReviews(req, res) {
     const userId = req.userId;
     try {
@@ -84,7 +80,6 @@ class ReviewController {
     }
   }
 
-  // --- UPDATE: Editar uma avaliação existente ---
   async update(req, res) {
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
@@ -112,7 +107,6 @@ class ReviewController {
     }
   }
 
-  // --- DELETE: Deletar uma avaliação existente ---
   async destroy(req, res) {
     const { reviewId } = req.params;
     const userId = req.userId;

@@ -1,9 +1,7 @@
-// scripts/backfill-slugs.js
-
 require('dotenv').config();
 const slugify = require('slugify');
 const Book = require('../src/models/Book');
-require('../src/database'); // Conecta ao banco
+require('../src/database');
 
 async function backfillSlugs() {
   console.log('Iniciando o script para preencher slugs...');
@@ -25,7 +23,7 @@ async function backfillSlugs() {
       console.log(`- Slug '${newSlug}' salvo para o livro ID ${book.id}`);
     } catch (error) {
       console.error(`! Erro ao salvar slug para o livro ID ${book.id}:`, error.message);
-      // Adiciona um sufixo aleatório em caso de colisão
+
       const newSlugWithSuffix = `${slugify(book.title, { lower: true, strict: true, remove: /[*+~.()'"!:@]/g })}-${Math.floor(Math.random() * 1000)}`;
       book.slug = newSlugWithSuffix;
       await book.save();

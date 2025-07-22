@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const sequelize = require('./database'); 
-// Importe todas as suas rotas
+
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
@@ -43,7 +43,7 @@ class App {
         });
       }
     });
-    // ------------------------------------
+    // -----------------------------------------------------------------
 
     this.server.get('/', (req, res) => {
         res.json({ message: 'API MyReadify está no ar!' });

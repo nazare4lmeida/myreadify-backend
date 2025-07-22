@@ -1,4 +1,3 @@
-// Em src/database/migrations/[timestamp]-create-reviews.js
 'use strict';
 
 module.exports = {
@@ -16,20 +15,20 @@ module.exports = {
       },
       comment: {
         type: Sequelize.TEXT,
-        allowNull: true, // O comentário pode ser opcional
+        allowNull: true, 
       },
-      user_id: { // Chave estrangeira para o usuário que avaliou
+      user_id: { 
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', // Se o usuário for deletado, suas avaliações também são
+        onDelete: 'CASCADE', 
         allowNull: false,
       },
-      book_id: { // Chave estrangeira para o livro que foi avaliado
+      book_id: { 
         type: Sequelize.INTEGER,
         references: { model: 'books', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', // Se o livro for deletado, suas avaliações também são
+        onDelete: 'CASCADE',
         allowNull: false,
       },
       created_at: {

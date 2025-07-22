@@ -1,4 +1,3 @@
-// Em src/database/migrations/[timestamp]-create-books.js
 'use strict';
 
 module.exports = {
@@ -35,11 +34,11 @@ module.exports = {
         allowNull: false,
         defaultValue: 'PENDING',
       },
-      submitted_by: { // Chave estrangeira para a tabela de usuários
+      submitted_by: { 
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL', // Se o usuário for deletado, o livro não é, apenas a referência
+        onDelete: 'SET NULL', 
         allowNull: true,
       },
       created_at: {

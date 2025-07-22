@@ -1,16 +1,11 @@
-// .sequelizerc
 const path = require('path');
 
 module.exports = {
-  // Aponta para o nosso arquivo de configuração principal
   'config': path.resolve('src', 'config', 'database.js'),
 
-  // Informa onde estão nossos modelos
   'models-path': path.resolve('src', 'models'),
   
-  // Informa onde estão nossas migrations
   'migrations-path': path.resolve('migrations'),
 
-  // (Opcional, mas bom ter) Informa onde estão os seeders
   'seeders-path': path.resolve('src', 'database', 'seeders'),
 };

@@ -1,4 +1,3 @@
-// Em src/database/migrations/[timestamp]-create-users.js
 'use strict';
 
 module.exports = {

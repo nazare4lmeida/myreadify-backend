@@ -1,11 +1,9 @@
-// src/controllers/ContactController.js
 const Message = require('../models/Message');
 
 class ContactController {
   async store(req, res) {
     const { name, email, subject, message } = req.body;
 
-    // Validação simples
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }

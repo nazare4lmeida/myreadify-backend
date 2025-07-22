@@ -1,5 +1,3 @@
-// src/models/Book.js
-
 const { Model, DataTypes } = require('sequelize');
 const slugify = require('slugify');
 
@@ -29,9 +27,6 @@ class Book extends Model {
       sequelize,
     });
 
-    // --- HOOK CORRIGIDO ---
-    // Usamos 'addHook' para adicionar a lógica.
-    // Trocamos 'beforeValidate' por 'beforeCreate' para rodar apenas na criação do livro.
     this.addHook('beforeCreate', async (book) => {
       if (book.title) {
         const slugifyOptions = {
@@ -44,15 +39,11 @@ class Book extends Model {
         let slug = baseSlug;
         let counter = 1;
 
-        // Loop que verifica se o slug já existe.
-        // `this` aqui se refere ao modelo 'Book'.
         while (await this.findOne({ where: { slug } })) {
-          // Se existir, adiciona um número ao final e tenta de novo.
           slug = `${baseSlug}-${counter}`;
           counter++;
         }
 
-        // Atribui o slug final e único ao livro que será criado.
         book.slug = slug;
       }
     });

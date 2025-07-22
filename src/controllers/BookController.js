@@ -1,11 +1,8 @@
-// src/controllers/BookController.js - VERSÃO COMPLETA E CORRIGIDA
-
 const Book = require('../models/Book');
 const User = require('../models/User');
 const slugify = require('slugify');
 
 class BookController {
-  // --- MÉTODO UPDATE ---
   async update(req, res) {
     const { slug } = req.params;
     const { summary } = req.body;

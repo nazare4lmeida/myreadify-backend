@@ -1,10 +1,7 @@
-// src/models/User.js
 const { Model, DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs'); // 1. Importe o bcrypt
-
+const bcrypt = require('bcryptjs'); 
 class User extends Model {
   static init(sequelize) {
-    // ... (o método super.init continua o mesmo)
     super.init({
       name: DataTypes.STRING,
       email: DataTypes.STRING,
@@ -19,13 +16,10 @@ class User extends Model {
   }
 
   static associate(models) {
-    // Um usuário tem muitos livros (resumos enviados)
     this.hasMany(models.Book, { foreignKey: 'submitted_by', as: 'submitted_books' });
-    // Um usuário tem muitas avaliações
     this.hasMany(models.Review, { foreignKey: 'user_id', as: 'reviews' });
   }
-
-  // 2. Adicione este método
+  
   checkPassword(password) {
     return bcrypt.compare(password, this.password_hash);
   }

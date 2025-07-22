@@ -10,11 +10,8 @@ class Review extends Model {
     });
   }
 
-  // Definindo as associações
   static associate(models) {
-    // Uma avaliação pertence a um usuário
     this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
-    // Uma avaliação pertence a um livro
     this.belongsTo(models.Book, { foreignKey: 'book_id', as: 'book' });
   }
 }

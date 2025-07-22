@@ -24,8 +24,6 @@ module.exports = {
     const booksWithDetails = booksToSeed.map(book => ({
       ...book,
       
-      // --- AQUI ESTÁ A CORREÇÃO ---
-      // Voltamos a usar um texto provisório para o resumo, para respeitar a regra 'NOT NULL' do banco.
       summary: 'Este livro ainda não possui um resumo. Seja o primeiro a enviar o seu!',
       
       status: 'APPROVED',

@@ -1,4 +1,3 @@
-// src/models/Message.js
 const { Model, DataTypes } = require('sequelize');
 
 class Message extends Model {
@@ -14,7 +13,7 @@ class Message extends Model {
       {
         sequelize,
         modelName: 'Message',
-        tableName: 'messages', // <-- ADICIONE ESTA LINHA
+        tableName: 'messages', 
       }
     );
   }
