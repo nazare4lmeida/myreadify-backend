@@ -1,4 +1,4 @@
-// src/config/database.js - VERSÃO MAIS ROBUSTA
+// src/config/database.js - VERSÃO FINAL E CORRETA
 
 require('dotenv').config();
 
@@ -13,22 +13,17 @@ const config = {
     underscored: true,
     underscoredAll: true,
   },
-  dialectOptions: {
+};
+
+// --- LÓGICA CRÍTICA PARA PRODUÇÃO ---
+// Adiciona as configurações de SSL APENAS se o ambiente for de produção (na Vercel).
+if (process.env.NODE_ENV === 'production') {
+  config.dialectOptions = {
     ssl: {
       require: true,
       rejectUnauthorized: false
     }
-  },
-};
+  };
+}
 
-// --- LÓGICA INTELIGENTE ---
-// Se uma DATABASE_URL for encontrada nas variáveis de ambiente (padrão da Vercel/Heroku),
-// use-a. Caso contrário, use as variáveis separadas (para desenvolvimento local).
-module.exports = process.env.DATABASE_URL
-  ? {
-      ...config,
-      // O Sequelize pode usar a URL diretamente, mas vamos garantir que o SSL seja aplicado
-      // passando a URL e as opções de dialeto.
-      url: process.env.DATABASE_URL,
-    }
-  : config;
+module.exports = config;
