@@ -1,15 +1,17 @@
+// vercel.json - VERSÃO CORRIGIDA E FINAL
+
 {
   "version": 2,
   "builds": [
     {
-      "src": "./src/server.js",
+      "src": "./src/app.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/src/server.js"
+      "dest": "/src/app.js"
     }
   ]
 }
