@@ -1,10 +1,11 @@
-// src/config/database.js - VERSÃO FINAL E CORRETA
+// src/config/database.js - VERSÃO FINAL E COMPLETA
 
 require('dotenv').config();
 
 const config = {
   dialect: process.env.DB_DIALECT || 'postgres',
   host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 5432, // <-- A LINHA QUE FALTAVA
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
