@@ -78,24 +78,19 @@ class BookController {
     }
   }
 
-  // --- FUNÇÃO INDEX CORRIGIDA ---
   async index(req, res) {
-    try {
-      // Usamos uma query mais simples para garantir que a conexão e a busca funcionem.
-      const books = await Book.findAll({
-        where: { status: 'APPROVED' },
-        order: [['title', 'ASC']],
-      });
+  try {
+    const books = await Book.findAll({
+      where: { status: 'APPROVED' },
+      order: [['title', 'ASC']],
+    });
 
-      // Retornamos a lista completa de livros aprovados.
-      return res.json(books);
-
-    } catch (err) {
-      // Adicionamos um log de erro detalhado para futuras depurações.
-      console.error("ERRO DETALHADO AO BUSCAR LIVROS:", err);
-      return res.status(500).json({ error: 'Falha ao buscar os livros.' });
-    }
+    return res.json({ books }); // <<< AQUI: retorna como objeto
+  } catch (err) {
+    console.error("ERRO DETALHADO AO BUSCAR LIVROS:", err);
+    return res.status(500).json({ error: 'Falha ao buscar os livros.' });
   }
+}
 }
 
 module.exports = new BookController();

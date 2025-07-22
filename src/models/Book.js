@@ -22,7 +22,7 @@ class Book extends Model {
       full_cover_url: {
         type: DataTypes.VIRTUAL,
         get() {
-          return this.cover_url ? `http://localhost:3333/files/${this.cover_url}` : null;
+          return this.cover_url ? `https://myreadify-backend.onrender.com/files/${this.cover_url}` : null;
         }
       }
     }, {

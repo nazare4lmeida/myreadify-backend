@@ -1,11 +1,8 @@
-// src/app.js - COM ROTA DE DIAGNÓSTICO
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const sequelize = require('./database'); // <-- 1. IMPORTAÇÃO ADICIONADA
-
+const sequelize = require('./database'); 
 // Importe todas as suas rotas
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
@@ -31,7 +28,7 @@ class App {
   }
 
   routes() {
-    // --- ROTA DE DIAGNÓSTICO (NOVA) ---
+    // --- ROTA DE DIAGNÓSTICO ---
     this.server.get('/health-check', async (req, res) => {
       try {
         await sequelize.authenticate();

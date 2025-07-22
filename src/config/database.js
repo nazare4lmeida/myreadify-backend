@@ -1,11 +1,9 @@
-// src/config/database.js - VERSÃO FINAL E COMPLETA
-
 require('dotenv').config();
 
 const config = {
   dialect: process.env.DB_DIALECT || 'postgres',
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 5432, // <-- A LINHA QUE FALTAVA
+  port: process.env.DB_PORT || 5432,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -16,9 +14,8 @@ const config = {
   },
 };
 
-// --- LÓGICA CRÍTICA PARA PRODUÇÃO ---
-// Adiciona as configurações de SSL APENAS se o ambiente for de produção (na Vercel).
-if (process.env.NODE_ENV === 'production') {
+// --- LÓGICA DE SSL FINAL ---
+if (config.host !== 'https://myreadify-backend.onrender.com/') {
   config.dialectOptions = {
     ssl: {
       require: true,
@@ -26,5 +23,4 @@ if (process.env.NODE_ENV === 'production') {
     }
   };
 }
-
 module.exports = config;
