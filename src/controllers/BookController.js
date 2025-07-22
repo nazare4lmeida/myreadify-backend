@@ -1,20 +1,16 @@
-// src/controllers/BookController.js
+// src/controllers/BookController.js - VERSÃO COMPLETA E CORRIGIDA
 
 const Book = require('../models/Book');
 const User = require('../models/User');
-const slugify = require('slugify'); // Assumindo que você usa slugify
-
-// ... (sua função generateSlug, se existir)
+const slugify = require('slugify');
 
 class BookController {
-  // --- MÉTODO UPDATE (NOVO) ---
-  // Este método será usado para atualizar um livro existente com um resumo.
+  // --- MÉTODO UPDATE ---
   async update(req, res) {
-    const { slug } = req.params; // Pega o slug da URL
-    const { summary } = req.body; // Pega o novo resumo do corpo da requisição
-    const submitted_by = req.userId; // Pega o ID do usuário logado
+    const { slug } = req.params;
+    const { summary } = req.body;
+    const submitted_by = req.userId;
 
-    // Validação simples
     if (!summary) {
       return res.status(400).json({ error: 'O conteúdo do resumo é obrigatório.' });
     }
@@ -22,26 +18,24 @@ class BookController {
     try {
       const book = await Book.findOne({ where: { slug } });
 
-      // Verifica se o livro existe
       if (!book) {
         return res.status(404).json({ error: 'Livro não encontrado.' });
       }
       
-      // Atualiza os campos do livro
       book.summary = summary;
       book.submitted_by = submitted_by;
-      book.status = 'PENDING'; // O resumo entra para aprovação
+      book.status = 'PENDING';
 
-      await book.save(); // Salva as alterações no banco de dados
+      await book.save();
 
-      return res.json(book); // Retorna o livro atualizado
+      return res.json(book);
     } catch (err) {
       console.error('Erro ao atualizar o livro:', err);
       return res.status(500).json({ error: 'Falha ao atualizar o resumo.' });
     }
   }
 
-  // --- O resto dos seus métodos (store, listMyBooks, etc.) permanecem iguais ---
+  // --- O resto dos seus métodos permanecem iguais ---
   async store(req, res) {
     const { title, author, category, summary } = req.body;
     if (!req.file) {
@@ -64,7 +58,8 @@ class BookController {
     try {
       const books = await Book.findAll({ where: { submitted_by: req.userId }, order: [['createdAt', 'DESC']] });
       return res.json(books);
-    } catch (err) {
+    } catch (err)
+ {
       console.error('Erro ao buscar "meus livros":', err);
       return res.status(500).json({ error: 'Falha ao buscar seus envios.' });
     }
@@ -72,7 +67,7 @@ class BookController {
 
   async show(req, res) {
     try {
-      const { slug: bookSlug } = req.params; // Renomeado para evitar conflito
+      const { slug: bookSlug } = req.params;
       const book = await Book.findOne({ where: { slug: bookSlug }, include: { model: User, as: 'submitter', attributes: ['name'] } });
       if (!book || book.status !== 'APPROVED') {
         return res.status(404).json({ error: 'Livro não encontrado ou não aprovado.' });
@@ -83,27 +78,21 @@ class BookController {
     }
   }
 
+  // --- FUNÇÃO INDEX CORRIGIDA ---
   async index(req, res) {
     try {
-      const page = parseInt(req.query.page, 10) || 1;
-      const limit = parseInt(req.query.limit, 10) || 12;
-      const offset = (page - 1) * limit;
-
-      const { count, rows: books } = await Book.findAndCountAll({
+      // Usamos uma query mais simples para garantir que a conexão e a busca funcionem.
+      const books = await Book.findAll({
         where: { status: 'APPROVED' },
         order: [['title', 'ASC']],
-        limit,
-        offset,
       });
 
-      const totalPages = Math.ceil(count / limit);
+      // Retornamos a lista completa de livros aprovados.
+      return res.json(books);
 
-      return res.json({
-        books,
-        currentPage: page,
-        totalPages,
-      });
     } catch (err) {
+      // Adicionamos um log de erro detalhado para futuras depurações.
+      console.error("ERRO DETALHADO AO BUSCAR LIVROS:", err);
       return res.status(500).json({ error: 'Falha ao buscar os livros.' });
     }
   }
