@@ -32,7 +32,6 @@ class BookController {
     }
   }
 
-  // --- O resto dos seus métodos permanecem iguais ---
   async store(req, res) {
     const { title, author, category, summary } = req.body;
     if (!req.file) {
@@ -82,7 +81,7 @@ class BookController {
       order: [['title', 'ASC']],
     });
 
-    return res.json({ books }); // <<< AQUI: retorna como objeto
+    return res.json({ books });
   } catch (err) {
     console.error("ERRO DETALHADO AO BUSCAR LIVROS:", err);
     return res.status(500).json({ error: 'Falha ao buscar os livros.' });
