@@ -1,4 +1,8 @@
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv.config({ path: path.resolve(__dirname, '..', envFile) });
 
 const config = {
   dialect: process.env.DB_DIALECT || 'postgres',
@@ -12,15 +16,12 @@ const config = {
     underscored: true,
     underscoredAll: true,
   },
-};
-
-// --- LÓGICA DE SSL FINAL ---
-if (config.host !== 'https://myreadify-backend.onrender.com/') {
-  config.dialectOptions = {
+  dialectOptions: {
     ssl: {
       require: true,
       rejectUnauthorized: false
     }
-  };
-}
+  }
+};
+
 module.exports = config;
