@@ -1,9 +1,9 @@
 const Sequelize = require('sequelize');
 const dbConfig = require('../config/database');
 
-const User = require('../models/User');
-const Book = require('../models/Book');
-const Review = require('../models/Review');
+const { User } = require('../models');
+const { Book } = require('../models');
+const { Review } = require('../models');
 const Message = require('../models/Message');
 
 let connection;

@@ -1,6 +1,6 @@
-const Review = require('../models/Review');
-const Book = require('../models/Book');
-const User = require('../models/User');
+const { Review } = require('../models');
+const { Book } = require('../models');
+const { User } = require('../models');
 
 class ReviewController {
   async store(req, res) {

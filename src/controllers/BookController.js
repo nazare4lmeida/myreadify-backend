@@ -1,5 +1,4 @@
-const Book = require('../models/Book');
-const User = require('../models/User');
+const { Book, User } = require('../models');
 const slugify = require('slugify');
 
 class BookController {
