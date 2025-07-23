@@ -1,27 +1,69 @@
-// src/routes/checkAuthRoutes.js
-
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middlewares/auth');
-const User = require('../models/User'); // 1. Importe o model User
+const User = require('../models/User'); 
+
+/**
+ * @swagger
+ * tags:
+ *   name: Autenticação
+ *   description: Verificação de login e dados do usuário autenticado
+ */
+
+/**
+ * @swagger
+ * /check-auth:
+ *   get:
+ *     summary: Verifica se o usuário está autenticado e retorna seus dados
+ *     tags: [Autenticação]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Usuário autenticado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 loggedIn:
+ *                   type: boolean
+ *                   example: true
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: Maria
+ *                     email:
+ *                       type: string
+ *                       example: maria@email.com
+ *                     role:
+ *                       type: string
+ *                       example: user
+ *       401:
+ *         description: Token ausente ou inválido
+ *       404:
+ *         description: Usuário não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 
 // Rota protegida que valida o token e RETORNA os dados do usuário
 router.get('/check-auth', authMiddleware, async (req, res) => {
   try {
-    // 2. O authMiddleware já validou o token e nos deu o req.userId.
-    // Agora, usamos esse ID para buscar os dados do usuário no banco.
     const user = await User.findByPk(req.userId, {
-      attributes: ['id', 'name', 'email', 'role'], // Selecione os campos que o frontend precisa
+      attributes: ['id', 'name', 'email', 'role'],
     });
 
     if (!user) {
-      // Caso o usuário tenha sido deletado mas o token ainda seja válido
       return res.status(404).json({ loggedIn: false, error: 'Usuário não encontrado.' });
     }
 
-    // 3. Enviamos a resposta COMPLETA que o frontend espera
     return res.status(200).json({ loggedIn: true, user: user });
-
   } catch (error) {
     return res.status(500).json({ loggedIn: false, error: 'Erro interno do servidor.' });
   }

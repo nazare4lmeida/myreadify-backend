@@ -1,4 +1,6 @@
 const app = require('./app');
+require('../swagger')(app);
+
 
 const port = process.env.PORT || 3333;
 

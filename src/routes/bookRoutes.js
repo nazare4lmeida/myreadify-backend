@@ -1,5 +1,3 @@
-// src/routes/bookRoutes.js
-
 const { Router } = require('express');
 const multer = require('multer');
 const multerConfig = require('../config/multer');
@@ -10,27 +8,122 @@ const authMiddleware = require('../middlewares/auth');
 const routes = new Router();
 const upload = multer(multerConfig);
 
-// --- Rotas Públicas ---
-// Lista todos os livros aprovados (com paginação)
+/**
+ * @swagger
+ * tags:
+ *   name: Livros
+ *   description: Gerenciamento de livros
+ */
+
+/**
+ * @swagger
+ * /books:
+ *   get:
+ *     summary: Lista todos os livros aprovados (público)
+ *     tags: [Livros]
+ *     responses:
+ *       200:
+ *         description: Lista de livros retornada com sucesso
+ */
 routes.get('/books', BookController.index);
 
-// Mostra os detalhes de um livro específico pelo slug
+/**
+ * @swagger
+ * /books/{slug}:
+ *   get:
+ *     summary: Detalhes de um livro específico pelo slug (público)
+ *     tags: [Livros]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         description: Slug do livro
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Detalhes do livro retornados com sucesso
+ */
 routes.get('/books/:slug', BookController.show);
 
-
-// --- Rotas de Usuário Autenticado ---
-// Usa o middleware de autenticação para todas as rotas abaixo
+// Middleware de autenticação para as rotas abaixo
 routes.use(authMiddleware);
 
-// Cria um novo livro (requer upload de imagem)
+/**
+ * @swagger
+ * /books:
+ *   post:
+ *     summary: Cria um novo livro (privado)
+ *     tags: [Livros]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: A Menina que Roubava Livros
+ *               author:
+ *                 type: string
+ *                 example: Markus Zusak
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
+ *               description:
+ *                 type: string
+ *                 example: Um livro emocionante sobre a Segunda Guerra Mundial.
+ *     responses:
+ *       201:
+ *         description: Livro criado com sucesso
+ */
 routes.post('/books', upload.single('coverImage'), BookController.store);
 
-// --- ROTA DE ATUALIZAÇÃO (NOVA) ---
-// Atualiza um livro existente (por exemplo, adicionando um resumo).
-// Não precisa do 'upload' de imagem, pois estamos atualizando apenas os dados de texto.
+/**
+ * @swagger
+ * /books/{slug}:
+ *   put:
+ *     summary: Atualiza um livro existente (apenas texto, sem imagem)
+ *     tags: [Livros]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               summary:
+ *                 type: string
+ *                 example: Um resumo novo para o livro.
+ *     responses:
+ *       200:
+ *         description: Livro atualizado com sucesso
+ */
 routes.put('/books/:slug', BookController.update);
 
-// Lista os livros enviados pelo usuário logado
+/**
+ * @swagger
+ * /my-books:
+ *   get:
+ *     summary: Lista os livros enviados pelo usuário autenticado
+ *     tags: [Livros]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista dos livros do usuário retornada com sucesso
+ */
 routes.get('/my-books', BookController.listMyBooks);
 
 module.exports = routes;
