@@ -1,28 +1,54 @@
 const Sequelize = require('sequelize');
-const config = require('../config/database');
+const dbConfig = require('../config/database');
 
+// CORREÇÃO APLICADA AQUI: Importa cada model do seu arquivo específico
 const User = require('./User');
 const Book = require('./Book');
 const Review = require('./Review');
+const Message = require('./Message');
 
-const models = [User, Book, Review];
+let connection;
 
-const connection = new Sequelize(config);
+// Lógica de conexão (que já estava correta)
+if (process.env.DATABASE_URL) {
+  console.log('--- AMBIENTE DE PRODUÇÃO DETECTADO (Render) ---');
+  console.log('Conectando via DATABASE_URL com SSL...');
+  
+  connection = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    define: dbConfig.define,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+  });
 
-// Inicializa todos os models
-models.forEach((model) => model.init(connection));
+} else {
+  console.log('--- AMBIENTE DE DESENVOLVIMENTO DETECTADO (Local) ---');
+  console.log('Conectando via arquivo de configuração local...');
+  connection = new Sequelize(dbConfig);
+}
 
-// Executa os relacionamentos
-models.forEach((model) => {
-  if (model.associate) {
-    model.associate(connection.models);
-  }
-});
+try {
+  // Inicialização dos models (agora funcionará)
+  User.init(connection);
+  Book.init(connection);
+  Review.init(connection);
+  Message.init(connection);
 
-module.exports = {
-  connection,
-  Sequelize,
-  User,
-  Book,
-  Review
-};
+  // Associações
+  Object.values(connection.models)
+    .filter(model => typeof model.associate === 'function')
+    .forEach(model => model.associate(connection.models));
+
+  console.log('Models inicializados e associados com sucesso.');
+
+} catch (error) {
+  console.error('!!!!!! FALHA CRÍTICA AO INICIALIZAR MODELS !!!!!!', error);
+  throw error;
+}
+
+module.exports = connection;
