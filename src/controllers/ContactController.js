@@ -1,4 +1,4 @@
-const Message = require('../models/Message');
+const Message = require('../models/Message').models;
 
 class ContactController {
   async store(req, res) {

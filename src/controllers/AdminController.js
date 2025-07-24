@@ -2,8 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
 
-const { Book } = require('../models');
-const { User } = require('../models');
+const { Book, User } = require('../models').models; 
 
 const unlinkAsync = promisify(fs.unlink);
 

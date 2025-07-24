@@ -1,4 +1,4 @@
-const Message = require('../models/Message');
+const Message = require('../models/Message').models;
 const nodemailer = require('nodemailer');
 
 class MessageController {
