@@ -1,4 +1,7 @@
-const Message = require('../models').models;
+// 1. Importa a conexão principal
+const database = require('../models');
+// 2. Pega o model 'Message' de dentro da conexão
+const { Message } = database.models;
 const nodemailer = require('nodemailer');
 
 class MessageController {
