@@ -1,11 +1,14 @@
-const { Router } = require('express');
-const authMiddleware = require('../middlewares/auth');
-const adminMiddleware = require('../middlewares/admin');
+const { Router } = require("express");
+const multer = require("multer");
+const multerConfig = require("../config/multer");
+const authMiddleware = require("../middlewares/auth");
+const adminMiddleware = require("../middlewares/admin");
 
-const AdminController = require('../controllers/AdminController');
-const MessageController = require('../controllers/MessageController');
+const AdminController = require("../controllers/AdminController");
+const MessageController = require("../controllers/MessageController");
 
 const router = new Router();
+const upload = multer(multerConfig);
 
 /**
  * @swagger
@@ -14,7 +17,7 @@ const router = new Router();
  *   description: Rotas administrativas protegidas
  */
 
-router.use('/admin', authMiddleware, adminMiddleware);
+router.use("/admin", authMiddleware, adminMiddleware);
 
 /**
  * @swagger
@@ -26,7 +29,7 @@ router.use('/admin', authMiddleware, adminMiddleware);
  *       200:
  *         description: Lista de livros pendentes retornada com sucesso
  */
-router.get('/admin/pending-books', AdminController.listPending);
+router.get("/admin/pending-books", AdminController.listPending);
 
 /**
  * @swagger
@@ -56,7 +59,41 @@ router.get('/admin/pending-books', AdminController.listPending);
  *       200:
  *         description: Status atualizado com sucesso
  */
-router.patch('/admin/books/:bookId/status', AdminController.updateBookStatus);
+router.patch("/admin/books/:bookId/status", AdminController.updateBookStatus);
+
+/**
+ * @swagger
+ * /admin/books/{bookId}/cover:
+ *   patch:
+ *     summary: Atualiza apenas a imagem da capa de um livro
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: bookId
+ *         required: true
+ *         description: ID do livro para atualizar a capa
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: O novo arquivo de imagem da capa.
+ *     responses:
+ *       200:
+ *         description: Capa atualizada com sucesso
+ */
+router.patch(
+  "/admin/books/:bookId/cover",
+  upload.single("coverImage"),
+  AdminController.updateCoverImage
+);
 
 /**
  * @swagger
@@ -68,7 +105,7 @@ router.patch('/admin/books/:bookId/status', AdminController.updateBookStatus);
  *       200:
  *         description: Lista de livros retornada com sucesso
  */
-router.get('/admin/all-books', AdminController.listAll);
+router.get("/admin/all-books", AdminController.listAll);
 
 /**
  * @swagger
@@ -86,7 +123,7 @@ router.get('/admin/all-books', AdminController.listAll);
  *       200:
  *         description: Livro removido com sucesso
  */
-router.delete('/admin/books/:bookId', AdminController.deleteBook);
+router.delete("/admin/books/:bookId", AdminController.deleteBook);
 
 /**
  * @swagger
@@ -98,7 +135,7 @@ router.delete('/admin/books/:bookId', AdminController.deleteBook);
  *       200:
  *         description: Lista de mensagens retornada com sucesso
  */
-router.get('/admin/messages', MessageController.index);
+router.get("/admin/messages", MessageController.index);
 
 /**
  * @swagger
@@ -116,7 +153,7 @@ router.get('/admin/messages', MessageController.index);
  *       200:
  *         description: Mensagem excluída com sucesso
  */
-router.delete('/admin/messages/:messageId', MessageController.destroy);
+router.delete("/admin/messages/:messageId", MessageController.destroy);
 
 /**
  * @swagger
@@ -145,6 +182,6 @@ router.delete('/admin/messages/:messageId', MessageController.destroy);
  *       200:
  *         description: Resposta enviada com sucesso
  */
-router.post('/admin/messages/:messageId/reply', MessageController.reply);
+router.post("/admin/messages/:messageId/reply", MessageController.reply);
 
 module.exports = router;

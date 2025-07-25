@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authMiddleware = require('../middlewares/auth');
-const { User } = require('../models'); 
+const authMiddleware = require("../middlewares/auth");
+const { User } = require("../models");
 
 /**
  * @swagger
@@ -52,20 +52,23 @@ const { User } = require('../models');
  *         description: Erro interno do servidor
  */
 
-// Rota protegida que valida o token e RETORNA os dados do usuário
-router.get('/check-auth', authMiddleware, async (req, res) => {
+router.get("/check-auth", authMiddleware, async (req, res) => {
   try {
     const user = await User.findByPk(req.userId, {
-      attributes: ['id', 'name', 'email', 'role'],
+      attributes: ["id", "name", "email", "role"],
     });
 
     if (!user) {
-      return res.status(404).json({ loggedIn: false, error: 'Usuário não encontrado.' });
+      return res
+        .status(404)
+        .json({ loggedIn: false, error: "Usuário não encontrado." });
     }
 
     return res.status(200).json({ loggedIn: true, user: user });
   } catch (error) {
-    return res.status(500).json({ loggedIn: false, error: 'Erro interno do servidor.' });
+    return res
+      .status(500)
+      .json({ loggedIn: false, error: "Erro interno do servidor." });
   }
 });
 

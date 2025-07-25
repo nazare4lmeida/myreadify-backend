@@ -1,5 +1,5 @@
-const { Router } = require('express');
-const ContactController = require('../controllers/ContactController');
+const { Router } = require("express");
+const ContactController = require("../controllers/ContactController");
 
 const routes = new Router();
 
@@ -45,7 +45,6 @@ const routes = new Router();
  *         description: Erro interno no servidor
  */
 
-// Esta rota é pública, não precisa de autenticação para enviar mensagem.
-routes.post('/contact', ContactController.store);
+routes.post("/contact", ContactController.store);
 
 module.exports = routes;

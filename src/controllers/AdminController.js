@@ -1,8 +1,9 @@
-const fs = require('fs');
-const path = require('path');
-const { promisify } = require('util');
+const fs = require("fs");
+const path = require("path");
+const { promisify } = require("util");
 
-const { Book, User } = require('../models').models; 
+const { Book, User } = require("../models").models;
+const { supabase } = require("../config/supabase"); // Importamos o Supabase
 
 const unlinkAsync = promisify(fs.unlink);
 
@@ -10,17 +11,19 @@ class AdminController {
   async listPending(req, res) {
     try {
       const pendingBooks = await Book.findAll({
-        where: { status: 'PENDING' },
-        order: [['createdAt', 'ASC']],
+        where: { status: "PENDING" },
+        order: [["createdAt", "ASC"]],
         include: {
           model: User,
-          as: 'submitter',
-          attributes: ['id', 'name'],
+          as: "submitter",
+          attributes: ["id", "name"],
         },
       });
       return res.json(pendingBooks);
     } catch (err) {
-      return res.status(500).json({ error: 'Falha ao buscar resumos pendentes.' });
+      return res
+        .status(500)
+        .json({ error: "Falha ao buscar resumos pendentes." });
     }
   }
 
@@ -28,14 +31,14 @@ class AdminController {
     const { bookId } = req.params;
     const { status } = req.body;
 
-    if (!['APPROVED', 'REJECTED'].includes(status)) {
-      return res.status(400).json({ error: 'Status fornecido é inválido.' });
+    if (!["APPROVED", "REJECTED"].includes(status)) {
+      return res.status(400).json({ error: "Status fornecido é inválido." });
     }
 
     try {
       const book = await Book.findByPk(bookId);
       if (!book) {
-        return res.status(404).json({ error: 'Resumo não encontrado.' });
+        return res.status(404).json({ error: "Resumo não encontrado." });
       }
 
       book.status = status;
@@ -43,20 +46,69 @@ class AdminController {
 
       return res.json(book);
     } catch (err) {
-      return res.status(500).json({ error: 'Falha ao atualizar o status do resumo.' });
+      return res
+        .status(500)
+        .json({ error: "Falha ao atualizar o status do resumo." });
     }
   }
 
-  // --- Método para LISTAR TODOS os resumos ---
+  async updateCoverImage(req, res) {
+    const { bookId } = req.params;
+
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ error: "Nenhum arquivo de imagem foi enviado." });
+    }
+
+    try {
+      const book = await Book.findByPk(bookId);
+      if (!book) {
+        return res.status(404).json({ error: "Resumo não encontrado." });
+      }
+
+      const file = req.file;
+      const fileName = `${Date.now()}-${file.originalname.replace(/\s/g, "_")}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("covers") // Nome do seu bucket
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+        });
+
+      if (uploadError) {
+        throw new Error(
+          "Falha no upload para o Supabase: " + uploadError.message
+        );
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("covers")
+        .getPublicUrl(fileName);
+
+      book.cover_url = publicUrlData.publicUrl;
+      await book.save();
+
+      return res.json(book);
+    } catch (err) {
+      console.error("Erro ao atualizar a capa do livro:", err);
+      return res
+        .status(500)
+        .json({ error: "Falha interna ao atualizar a capa." });
+    }
+  }
+
   async listAll(req, res) {
     try {
       const allBooks = await Book.findAll({
-        order: [['createdAt', 'DESC']],
-        include: { model: User, as: 'submitter', attributes: ['name'] }
+        order: [["createdAt", "DESC"]],
+        include: { model: User, as: "submitter", attributes: ["name"] },
       });
       return res.json(allBooks);
     } catch (err) {
-      return res.status(500).json({ error: 'Falha ao buscar todos os resumos.' });
+      return res
+        .status(500)
+        .json({ error: "Falha ao buscar todos os resumos." });
     }
   }
 
@@ -66,18 +118,12 @@ class AdminController {
     try {
       const book = await Book.findByPk(bookId);
       if (!book) {
-        return res.status(404).json({ error: 'Resumo não encontrado.' });
+        return res.status(404).json({ error: "Resumo não encontrado." });
       }
 
-      if (book.cover_url) {
-        const imagePath = path.resolve(
-          __dirname, '..', '..', 'tmp', 'uploads', book.cover_url
-        );
-        try {
-          await unlinkAsync(imagePath);
-        } catch (fileErr) {
-          console.warn(`Arquivo de imagem não encontrado para deletar: ${imagePath}`);
-        }
+      if (book.cover_url && book.cover_url.includes("supabase")) {
+        const fileName = book.cover_url.split("/").pop();
+        await supabase.storage.from("covers").remove([fileName]);
       }
 
       await book.destroy();
@@ -85,7 +131,7 @@ class AdminController {
       return res.status(204).send();
     } catch (err) {
       console.error("Erro ao deletar livro:", err);
-      return res.status(500).json({ error: 'Falha ao deletar o resumo.' });
+      return res.status(500).json({ error: "Falha ao deletar o resumo." });
     }
   }
 }

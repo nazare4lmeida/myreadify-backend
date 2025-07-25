@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const multer = require('multer');
-const multerConfig = require('../config/multer');
+const { Router } = require("express");
+const multer = require("multer");
+const multerConfig = require("../config/multer");
 
-const BookController = require('../controllers/BookController');
-const authMiddleware = require('../middlewares/auth');
+const BookController = require("../controllers/BookController");
+const authMiddleware = require("../middlewares/auth");
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -25,7 +25,7 @@ const upload = multer(multerConfig);
  *       200:
  *         description: Lista de livros retornada com sucesso
  */
-routes.get('/books', BookController.index);
+routes.get("/books", BookController.index);
 
 /**
  * @swagger
@@ -44,9 +44,8 @@ routes.get('/books', BookController.index);
  *       200:
  *         description: Detalhes do livro retornados com sucesso
  */
-routes.get('/books/:slug', BookController.show);
+routes.get("/books/:slug", BookController.show);
 
-// Middleware de autenticação para as rotas abaixo
 routes.use(authMiddleware);
 
 /**
@@ -80,7 +79,7 @@ routes.use(authMiddleware);
  *       201:
  *         description: Livro criado com sucesso
  */
-routes.post('/books', upload.single('coverImage'), BookController.store);
+routes.post("/books", upload.single("coverImage"), BookController.store);
 
 /**
  * @swagger
@@ -110,7 +109,7 @@ routes.post('/books', upload.single('coverImage'), BookController.store);
  *       200:
  *         description: Livro atualizado com sucesso
  */
-routes.put('/books/:slug', BookController.update);
+routes.put("/books/:slug", BookController.update);
 
 /**
  * @swagger
@@ -124,6 +123,6 @@ routes.put('/books/:slug', BookController.update);
  *       200:
  *         description: Lista dos livros do usuário retornada com sucesso
  */
-routes.get('/my-books', BookController.listMyBooks);
+routes.get("/my-books", BookController.listMyBooks);
 
 module.exports = routes;

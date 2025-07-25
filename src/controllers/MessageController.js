@@ -1,34 +1,33 @@
-// 1. Importa a conexão principal
-const database = require('../models');
-// 2. Pega o model 'Message' de dentro da conexão
+const database = require("../models");
+
 const { Message } = database.models;
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 class MessageController {
   async index(req, res) {
     try {
       const messages = await Message.findAll({
-        order: [['created_at', 'DESC']],
+        order: [["created_at", "DESC"]],
       });
       return res.json(messages);
     } catch (error) {
-      console.error('Erro ao buscar mensagens:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor.' });
+      console.error("Erro ao buscar mensagens:", error);
+      return res.status(500).json({ error: "Erro interno do servidor." });
     }
   }
-  
+
   async destroy(req, res) {
     const { messageId } = req.params;
     try {
       const message = await Message.findByPk(messageId);
       if (!message) {
-        return res.status(404).json({ error: 'Mensagem não encontrada.' });
+        return res.status(404).json({ error: "Mensagem não encontrada." });
       }
       await message.destroy();
-      return res.status(204).send(); 
+      return res.status(204).send();
     } catch (error) {
-      console.error('Erro ao deletar mensagem:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor.' });
+      console.error("Erro ao deletar mensagem:", error);
+      return res.status(500).json({ error: "Erro interno do servidor." });
     }
   }
 
@@ -39,13 +38,15 @@ class MessageController {
     try {
       const originalMessage = await Message.findByPk(messageId);
       if (!originalMessage) {
-        return res.status(404).json({ error: 'Mensagem original não encontrada.' });
+        return res
+          .status(404)
+          .json({ error: "Mensagem original não encontrada." });
       }
-      
+
       const transporter = nodemailer.createTransport({
         host: process.env.MAIL_HOST,
         port: process.env.MAIL_PORT,
-        secure: true, 
+        secure: true,
         auth: {
           user: process.env.MAIL_USER,
           pass: process.env.MAIL_PASS,
@@ -61,7 +62,7 @@ class MessageController {
           <p>Em resposta à sua mensagem:</p>
           <p><i>"${originalMessage.message}"</i></p>
           <hr>
-          <p>${replyText.replace(/\n/g, '<br>')}</p>
+          <p>${replyText.replace(/\n/g, "<br>")}</p>
           <br>
           <p>Atenciosamente,</p>
           <p>Equipe MyReadify</p>
@@ -71,11 +72,10 @@ class MessageController {
       originalMessage.is_read = true;
       await originalMessage.save();
 
-      return res.status(200).json({ message: 'Resposta enviada com sucesso!' });
-
+      return res.status(200).json({ message: "Resposta enviada com sucesso!" });
     } catch (error) {
-      console.error('Erro ao enviar email de resposta:', error);
-      return res.status(500).json({ error: 'Falha ao enviar a resposta.' });
+      console.error("Erro ao enviar email de resposta:", error);
+      return res.status(500).json({ error: "Falha ao enviar a resposta." });
     }
   }
 }

@@ -1,22 +1,20 @@
-const Sequelize = require('sequelize');
-const dbConfig = require('../config/database');
+const Sequelize = require("sequelize");
+const dbConfig = require("../config/database");
 
-// CORREÇÃO APLICADA AQUI: Importa cada model do seu arquivo específico
-const User = require('./User');
-const Book = require('./Book');
-const Review = require('./Review');
-const Message = require('./Message');
+const User = require("./User");
+const Book = require("./Book");
+const Review = require("./Review");
+const Message = require("./Message");
 
 let connection;
 
-// Lógica de conexão (que já estava correta)
 if (process.env.DATABASE_URL) {
-  console.log('--- AMBIENTE DE PRODUÇÃO DETECTADO (Render) ---');
-  console.log('Conectando via DATABASE_URL com SSL...');
-  
+  console.log("--- AMBIENTE DE PRODUÇÃO DETECTADO (Render) ---");
+  console.log("Conectando via DATABASE_URL com SSL...");
+
   connection = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres',
-    protocol: 'postgres',
+    dialect: "postgres",
+    protocol: "postgres",
     define: dbConfig.define,
     dialectOptions: {
       ssl: {
@@ -25,29 +23,25 @@ if (process.env.DATABASE_URL) {
       },
     },
   });
-
 } else {
-  console.log('--- AMBIENTE DE DESENVOLVIMENTO DETECTADO (Local) ---');
-  console.log('Conectando via arquivo de configuração local...');
+  console.log("--- AMBIENTE DE DESENVOLVIMENTO DETECTADO (Local) ---");
+  console.log("Conectando via arquivo de configuração local...");
   connection = new Sequelize(dbConfig);
 }
 
 try {
-  // Inicialização dos models (agora funcionará)
   User.init(connection);
   Book.init(connection);
   Review.init(connection);
   Message.init(connection);
 
-  // Associações
   Object.values(connection.models)
-    .filter(model => typeof model.associate === 'function')
-    .forEach(model => model.associate(connection.models));
+    .filter((model) => typeof model.associate === "function")
+    .forEach((model) => model.associate(connection.models));
 
-  console.log('Models inicializados e associados com sucesso.');
-
+  console.log("Models inicializados e associados com sucesso.");
 } catch (error) {
-  console.error('!!!!!! FALHA CRÍTICA AO INICIALIZAR MODELS !!!!!!', error);
+  console.error("!!!!!! FALHA CRÍTICA AO INICIALIZAR MODELS !!!!!!", error);
   throw error;
 }
 
