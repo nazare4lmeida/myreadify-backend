@@ -5,6 +5,7 @@ const User = require("./User");
 const Book = require("./Book");
 const Review = require("./Review");
 const Message = require("./Message");
+const Summary = require('./summary');
 
 let connection;
 
@@ -34,6 +35,7 @@ try {
   Book.init(connection);
   Review.init(connection);
   Message.init(connection);
+  Summary.init(connection);
 
   Object.values(connection.models)
     .filter((model) => typeof model.associate === "function")

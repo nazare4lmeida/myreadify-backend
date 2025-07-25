@@ -2,7 +2,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
-dotenv.config({ path: path.resolve(__dirname, '..', envFile) });
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 // Configuração base, comum a todos os ambientes
 const baseConfig = {

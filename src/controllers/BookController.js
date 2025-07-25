@@ -1,17 +1,70 @@
-const { Book, User } = require("../models").models;
+const { Book, Summary, User } = require("../models").models;
 const slugify = require("slugify");
 const { supabase } = require("../config/supabase");
 
 class BookController {
+  async store(req, res) {
+    const { title, author, category, summary } = req.body;
+    const submitted_by = req.userId;
+    let coverUrlForDatabase;
+
+    if (!req.file) {
+      return res.status(400).json({
+        error: "A imagem de capa é obrigatória ou o tipo de arquivo não é suportado.",
+      });
+    }
+
+    try {
+      if (process.env.NODE_ENV === "production") {
+        const file = req.file;
+        const fileName = `${Date.now()}-${file.originalname}`;
+
+        const { error } = await supabase.storage
+          .from("covers")
+          .upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+          });
+
+        if (error) {
+          throw new Error("Falha no upload para o Supabase: " + error.message);
+        }
+
+        const { data } = supabase.storage
+          .from("covers")
+          .getPublicUrl(fileName);
+
+        coverUrlForDatabase = data.publicUrl;
+      } else {
+        coverUrlForDatabase = req.file.filename;
+      }
+
+      const slug = slugify(title, { lower: true });
+
+      const summaryCreated = await Summary.create({
+        title,
+        author,
+        category,
+        content: summary,
+        cover_url: coverUrlForDatabase,
+        submitted_by,
+        status: "PENDING",
+        slug,
+      });
+
+      return res.status(201).json(summaryCreated);
+    } catch (err) {
+      console.error("Erro ao criar resumo:", err);
+      return res.status(500).json({ error: "Falha ao enviar o resumo." });
+    }
+  }
+
   async update(req, res) {
     const { slug } = req.params;
     const { summary } = req.body;
     const submitted_by = req.userId;
 
     if (!summary) {
-      return res
-        .status(400)
-        .json({ error: "O conteúdo do resumo é obrigatório." });
+      return res.status(400).json({ error: "O conteúdo do resumo é obrigatório." });
     }
 
     try {
@@ -27,110 +80,54 @@ class BookController {
 
       await book.save();
 
-      return res.json(book);
+      return res.json({ books });
     } catch (err) {
       console.error("Erro ao atualizar o livro:", err);
       return res.status(500).json({ error: "Falha ao atualizar o resumo." });
     }
   }
 
-  async store(req, res) {
-    const { title, author, category, summary } = req.body;
-    const submitted_by = req.userId;
-    let coverUrlForDatabase; // Variável para guardar a URL final
-
-    if (!req.file) {
-      return res.status(400).json({
-        error:
-          "A imagem de capa é obrigatória ou o tipo de arquivo não é suportado.",
-      });
-    }
-
-    try {
-      if (process.env.NODE_ENV === "production") {
-        const file = req.file;
-        const fileName = `${Date.now()}-${file.originalname}`;
-
-        const { error } = await supabase.storage
-          .from("covers") // O nome do bucket que você criou
-          .upload(fileName, file.buffer, {
-            contentType: file.mimetype,
-          });
-
-        if (error) {
-          throw new Error("Falha no upload para o Supabase: " + error.message);
-        }
-
-        const { data } = supabase.storage
-          .from("covers") // O nome do bucket
-          .getPublicUrl(fileName);
-
-        coverUrlForDatabase = data.publicUrl;
-      } else {
-        coverUrlForDatabase = req.file.filename;
-      }
-
-      const book = await Book.create({
-        title,
-        author,
-        category,
-        summary,
-        cover_url: coverUrlForDatabase, // Usa a variável com o valor correto
-        submitted_by,
-        status: "PENDING",
-      });
-
-      return res.status(201).json(book);
-    } catch (err) {
-      console.error("Erro ao criar o livro:", err);
-      return res.status(500).json({ error: "Falha ao enviar o resumo." });
-    }
-  }
-
   async listMyBooks(req, res) {
     try {
-      const books = await Book.findAll({
+      const summaries = await Summary.findAll({
         where: { submitted_by: req.userId },
-        order: [["createdAt", "DESC"]],
+        order: [["created_at", "DESC"]],
       });
-      return res.json(books);
+      return res.json(summaries);
     } catch (err) {
-      console.error('Erro ao buscar "meus livros":', err);
-      return res.status(500).json({ error: "Falha ao buscar seus envios." });
+      console.error('Erro ao buscar "meus resumos":', err);
+      return res.status(500).json({ error: "Falha ao buscar seus resumos." });
     }
   }
 
   async show(req, res) {
     try {
-      const { slug: bookSlug } = req.params;
-      const book = await Book.findOne({
-        where: { slug: bookSlug },
+      const { slug } = req.params;
+      const summary = await Summary.findOne({
+        where: { slug, status: "APPROVED" },
         include: { model: User, as: "submitter", attributes: ["name"] },
       });
-      if (!book || book.status !== "APPROVED") {
+      if (!summary) {
         return res
           .status(404)
-          .json({ error: "Livro não encontrado ou não aprovado." });
+          .json({ error: "Resumo não encontrado ou não aprovado." });
       }
-      return res.json(book);
+      return res.json(summary);
     } catch (err) {
-      return res
-        .status(500)
-        .json({ error: "Falha ao buscar detalhes do livro." });
+      return res.status(500).json({ error: "Falha ao buscar detalhes do resumo." });
     }
   }
 
   async index(req, res) {
     try {
-      const books = await Book.findAll({
+      const summaries = await Summary.findAll({
         where: { status: "APPROVED" },
-        order: [["title", "ASC"]],
+        order: [["created_at", "DESC"]],
       });
-
-      return res.json(books);
+      return res.json(summaries);
     } catch (err) {
-      console.error("ERRO DETALHADO AO BUSCAR LIVROS:", err);
-      return res.status(500).json({ error: "Falha ao buscar os livros." });
+      console.error("Erro ao buscar resumos aprovados:", err);
+      return res.status(500).json({ error: "Falha ao buscar os resumos." });
     }
   }
 }

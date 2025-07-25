@@ -44,7 +44,7 @@ class AdminController {
       book.status = status;
       await book.save();
 
-      return res.json(book);
+      return res.json({ books });
     } catch (err) {
       return res
         .status(500)
@@ -89,7 +89,7 @@ class AdminController {
       book.cover_url = publicUrlData.publicUrl;
       await book.save();
 
-      return res.json(book);
+      return res.json({ books: book });
     } catch (err) {
       console.error("Erro ao atualizar a capa do livro:", err);
       return res
