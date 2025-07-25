@@ -1,16 +1,17 @@
-const { Book, Summary, User } = require("../models").models;
+const { Book, Summary, User } = require("../models");
 const slugify = require("slugify");
 const { supabase } = require("../config/supabase");
 
 class BookController {
   async store(req, res) {
     const { title, author, category, summary } = req.body;
-    const submitted_by = req.userId;
+    const user_id = req.userId;
     let coverUrlForDatabase;
 
     if (!req.file) {
       return res.status(400).json({
-        error: "A imagem de capa é obrigatória ou o tipo de arquivo não é suportado.",
+        error:
+          "A imagem de capa é obrigatória ou o tipo de arquivo não é suportado.",
       });
     }
 
@@ -29,10 +30,7 @@ class BookController {
           throw new Error("Falha no upload para o Supabase: " + error.message);
         }
 
-        const { data } = supabase.storage
-          .from("covers")
-          .getPublicUrl(fileName);
-
+        const { data } = supabase.storage.from("covers").getPublicUrl(fileName);
         coverUrlForDatabase = data.publicUrl;
       } else {
         coverUrlForDatabase = req.file.filename;
@@ -45,8 +43,8 @@ class BookController {
         author,
         category,
         content: summary,
-        cover_url: coverUrlForDatabase,
-        submitted_by,
+        cover_path: coverUrlForDatabase,
+        user_id,
         status: "PENDING",
         slug,
       });
@@ -61,28 +59,30 @@ class BookController {
   async update(req, res) {
     const { slug } = req.params;
     const { summary } = req.body;
-    const submitted_by = req.userId;
+    const user_id = req.userId;
 
     if (!summary) {
-      return res.status(400).json({ error: "O conteúdo do resumo é obrigatório." });
+      return res
+        .status(400)
+        .json({ error: "O conteúdo do resumo é obrigatório." });
     }
 
     try {
-      const book = await Book.findOne({ where: { slug } });
+      const book = await Summary.findOne({ where: { slug } });
 
       if (!book) {
-        return res.status(404).json({ error: "Livro não encontrado." });
+        return res.status(404).json({ error: "Resumo não encontrado." });
       }
 
-      book.summary = summary;
-      book.submitted_by = submitted_by;
+      book.content = summary;
+      book.user_id = user_id;
       book.status = "PENDING";
 
       await book.save();
 
-      return res.json({ books });
+      return res.json(book);
     } catch (err) {
-      console.error("Erro ao atualizar o livro:", err);
+      console.error("Erro ao atualizar o resumo:", err);
       return res.status(500).json({ error: "Falha ao atualizar o resumo." });
     }
   }
@@ -90,7 +90,7 @@ class BookController {
   async listMyBooks(req, res) {
     try {
       const summaries = await Summary.findAll({
-        where: { submitted_by: req.userId },
+        where: { user_id: req.userId },
         order: [["created_at", "DESC"]],
       });
       return res.json(summaries);
@@ -114,16 +114,24 @@ class BookController {
       }
       return res.json(summary);
     } catch (err) {
-      return res.status(500).json({ error: "Falha ao buscar detalhes do resumo." });
+      return res
+        .status(500)
+        .json({ error: "Falha ao buscar detalhes do resumo." });
     }
   }
 
   async index(req, res) {
     try {
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = parseInt(req.query.offset) || 0;
+
       const summaries = await Summary.findAll({
         where: { status: "APPROVED" },
         order: [["created_at", "DESC"]],
+        limit,
+        offset,
       });
+
       return res.json(summaries);
     } catch (err) {
       console.error("Erro ao buscar resumos aprovados:", err);

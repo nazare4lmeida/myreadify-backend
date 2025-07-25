@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { promisify } = require("util");
 
-const { Book, User } = require("../models").models;
+const { Book, User } = require("../models")
 const { supabase } = require("../config/supabase"); // Importamos o Supabase
 
 const unlinkAsync = promisify(fs.unlink);

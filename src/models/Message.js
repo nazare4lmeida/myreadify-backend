@@ -2,7 +2,7 @@ const { Model, DataTypes } = require('sequelize');
 
 class Message extends Model {
   static init(sequelize) {
-    super.init(
+    return super.init(
       {
         name: DataTypes.STRING,
         email: DataTypes.STRING,
@@ -13,7 +13,9 @@ class Message extends Model {
       {
         sequelize,
         modelName: 'Message',
-        tableName: 'messages', 
+        tableName: 'messages',
+        timestamps: true,
+        underscored: true,
       }
     );
   }

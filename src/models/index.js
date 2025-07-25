@@ -1,50 +1,27 @@
-const Sequelize = require("sequelize");
-const dbConfig = require("../config/database");
+const fs = require('fs');
+const path = require('path');
+const Sequelize = require('sequelize');
+const config = require('../config/database');
 
-const User = require("./User");
-const Book = require("./Book");
-const Review = require("./Review");
-const Message = require("./Message");
-const Summary = require('./summary');
+const sequelize = new Sequelize(config);
+const db = {};
 
-let connection;
-
-if (process.env.DATABASE_URL) {
-  console.log("--- AMBIENTE DE PRODUÇÃO DETECTADO (Render) ---");
-  console.log("Conectando via DATABASE_URL com SSL...");
-
-  connection = new Sequelize(process.env.DATABASE_URL, {
-    dialect: "postgres",
-    protocol: "postgres",
-    define: dbConfig.define,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
+fs.readdirSync(__dirname)
+  .filter((file) => file !== 'index.js' && file.endsWith('.js'))
+  .forEach((file) => {
+    const model = require(path.join(__dirname, file));
+    const modelInstance = model.init(sequelize);
+    db[modelInstance.name] = modelInstance;
   });
-} else {
-  console.log("--- AMBIENTE DE DESENVOLVIMENTO DETECTADO (Local) ---");
-  console.log("Conectando via arquivo de configuração local...");
-  connection = new Sequelize(dbConfig);
-}
 
-try {
-  User.init(connection);
-  Book.init(connection);
-  Review.init(connection);
-  Message.init(connection);
-  Summary.init(connection);
+// Executa os métodos associate, se existirem
+Object.values(db).forEach((model) => {
+  if (model.associate) {
+    model.associate(db);
+  }
+});
 
-  Object.values(connection.models)
-    .filter((model) => typeof model.associate === "function")
-    .forEach((model) => model.associate(connection.models));
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-  console.log("Models inicializados e associados com sucesso.");
-} catch (error) {
-  console.error("!!!!!! FALHA CRÍTICA AO INICIALIZAR MODELS !!!!!!", error);
-  throw error;
-}
-
-module.exports = connection;
+module.exports = db;

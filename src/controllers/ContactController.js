@@ -1,6 +1,6 @@
 const database = require("../models");
 
-const { Message } = database.models;
+const { Message } = database;
 
 class ContactController {
   async store(req, res) {
