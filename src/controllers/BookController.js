@@ -4,9 +4,9 @@ class BookController {
   async index(req, res) {
     try {
       const books = await Book.findAll({
-        where: { status: 'APPROVED' },
+        where: { status: 'APPROVED' }, // ou "COMPLETED", dependendo do valor correto
         order: [['created_at', 'DESC']],
-        attributes: ['id', 'title', 'author', 'category', ['cover_path', 'cover_url']],
+        attributes: ['id', 'title', 'author', 'category', 'cover_url'], // <- Corrigido aqui
       });
 
       return res.json(books);

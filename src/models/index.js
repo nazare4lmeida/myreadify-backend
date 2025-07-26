@@ -6,8 +6,9 @@ const config = require('../config/database');
 const basename = path.basename(__filename);
 const db = {};
 
-const sequelize = new Sequelize(config);
-
+const sequelize = config.url
+  ? new Sequelize(config.url, config)
+  : new Sequelize(config.database, config.username, config.password, config);
 fs.readdirSync(__dirname)
   .filter(file =>
     file.indexOf('.') !== 0 &&

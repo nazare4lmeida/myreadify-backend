@@ -1,6 +1,5 @@
 const { Book, Summary, Message } = require('../models');
 const fs = require('fs');
-const { url } = require('inspector');
 const path = require('path');
 
 class AdminController {
@@ -54,7 +53,7 @@ class AdminController {
 
       // Remove imagem antiga
       if (book.cover_url) {
-        const oldPath = url.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
+        const oldPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
         if (fs.existsSync(oldPath)) {
           fs.unlinkSync(oldPath);
         }
@@ -82,8 +81,8 @@ class AdminController {
 
       if (book.cover_url) {
         const coverPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
-        if (fs.existsSync(cover_url)) {
-          fs.unlinkSync(cover_url);
+        if (fs.existsSync(coverPath)) {
+          fs.unlinkSync(coverPath);
         }
       }
 
