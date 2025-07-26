@@ -5,7 +5,7 @@ class SummaryController {
   async index(req, res) {
     try {
       const summaries = await Summary.findAll({
-        where: { status: 'APPROVED' },
+        where: { status: 'COMPLETED' },
         attributes: [
           'id',
           'title',

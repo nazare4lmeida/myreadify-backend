@@ -13,20 +13,21 @@ const baseConfig = {
   logging: false,
 };
 
-if (process.env.DATABASE_URL) {
-  module.exports = {
-    ...baseConfig,
-    dialect: 'postgres',
-    url: process.env.DATABASE_URL,
-  };
-} else {
+// Remover ou comentar o bloco DATABASE_URL
+// if (process.env.DATABASE_URL) {
+//   module.exports = {
+//     ...baseConfig,
+//     dialect: 'postgres',
+//     url: process.env.DATABASE_URL,
+//   };
+// } else {
   module.exports = {
     ...baseConfig,
     dialect: process.env.DB_DIALECT || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST || 'db',
     port: Number(process.env.DB_PORT) || 5432,
     username: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || null,
     database: process.env.DB_NAME || 'myreadify',
   };
-}
+// }

@@ -4,7 +4,7 @@ class BookController {
   async index(req, res) {
     try {
       const books = await Book.findAll({
-        where: { status: 'APPROVED' }, // ou "COMPLETED", dependendo do valor correto
+        where: { status: 'COMPLETED' }, // ou "COMPLETED", dependendo do valor correto
         order: [['created_at', 'DESC']],
         attributes: ['id', 'title', 'author', 'category', 'cover_url'], // <- Corrigido aqui
       });
@@ -19,6 +19,7 @@ class BookController {
       return res.status(500).json({ error: 'Erro ao buscar livros.' });
     }
   }
+  
 
   async show(req, res) {
     try {

@@ -54,7 +54,7 @@ router.get("/admin/pending-books", AdminController.listPending);
  *             properties:
  *               status:
  *                 type: string
- *                 example: APPROVED
+ *                 example: COMPLETED
  *     responses:
  *       200:
  *         description: Status atualizado com sucesso
@@ -160,7 +160,7 @@ router.get("/admin/pending-summaries", AdminController.listPendingSummaries);
  *             properties:
  *               status:
  *                 type: string
- *                 example: APPROVED
+ *                 example: COMPLETED
  *     responses:
  *       200:
  *         description: Status atualizado com sucesso
