@@ -1,34 +1,22 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config({
-    path: '.env.development',
-  });
+require('dotenv').config();
+const app = require('./app');
+const { sequelize } = require('./models');
+
+const PORT = process.env.PORT || 3000;
+
+async function startServer() {
+  try {
+    await sequelize.authenticate();
+    console.log('🟢 Conexão com o banco de dados estabelecida com sucesso.');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    });
+  } catch (error) {
+    console.error('🔴 Falha ao conectar com o banco de dados:', error);
+    process.exit(1);
+  }
 }
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const routes = require('./routes');
-const swaggerDocs = require('../swagger');
+startServer();
 
-require('./config/database'); 
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-app.use(
-  '/files',
-  express.static(path.resolve(__dirname, '..', 'tmp', 'uploads'))
-);
-
-
-app.use('/api', routes);
-
-swaggerDocs(app);
-
-const PORT = process.env.APP_PORT || 3333;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server rodando na porta ${PORT}`);
-});

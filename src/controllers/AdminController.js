@@ -1,29 +1,23 @@
-const fs = require("fs");
-const path = require("path");
-const { promisify } = require("util");
-
-const { Book, User } = require("../models")
-const { supabase } = require("../config/supabase"); // Importamos o Supabase
-
-const unlinkAsync = promisify(fs.unlink);
+const { Book, Summary, Message } = require('../models');
+const fs = require('fs');
+const path = require('path');
 
 class AdminController {
   async listPending(req, res) {
     try {
-      const pendingBooks = await Book.findAll({
-        where: { status: "PENDING" },
-        order: [["createdAt", "ASC"]],
-        include: {
-          model: User,
-          as: "submitter",
-          attributes: ["id", "name"],
-        },
-      });
-      return res.json(pendingBooks);
+      const books = await Book.findAll({ where: { status: 'PENDING' } });
+      return res.status(200).json(books);
     } catch (err) {
-      return res
-        .status(500)
-        .json({ error: "Falha ao buscar resumos pendentes." });
+      return res.status(500).json({ error: 'Erro ao buscar livros pendentes.' });
+    }
+  }
+
+  async listAll(req, res) {
+    try {
+      const books = await Book.findAll({ where: { status: 'APPROVED' } });
+      return res.status(200).json(books);
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao buscar livros aprovados.' });
     }
   }
 
@@ -31,84 +25,47 @@ class AdminController {
     const { bookId } = req.params;
     const { status } = req.body;
 
-    if (!["APPROVED", "REJECTED"].includes(status)) {
-      return res.status(400).json({ error: "Status fornecido é inválido." });
-    }
-
     try {
       const book = await Book.findByPk(bookId);
+
       if (!book) {
-        return res.status(404).json({ error: "Resumo não encontrado." });
+        return res.status(404).json({ error: 'Livro não encontrado.' });
       }
 
       book.status = status;
       await book.save();
 
-      return res.json({ books });
+      return res.status(200).json({ message: 'Status atualizado com sucesso.' });
     } catch (err) {
-      return res
-        .status(500)
-        .json({ error: "Falha ao atualizar o status do resumo." });
+      return res.status(500).json({ error: 'Erro ao atualizar status do livro.' });
     }
   }
 
   async updateCoverImage(req, res) {
     const { bookId } = req.params;
 
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({ error: "Nenhum arquivo de imagem foi enviado." });
-    }
-
     try {
       const book = await Book.findByPk(bookId);
+
       if (!book) {
-        return res.status(404).json({ error: "Resumo não encontrado." });
+        return res.status(404).json({ error: 'Livro não encontrado.' });
       }
 
-      const file = req.file;
-      const fileName = `${Date.now()}-${file.originalname.replace(/\s/g, "_")}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("covers") // Nome do seu bucket
-        .upload(fileName, file.buffer, {
-          contentType: file.mimetype,
-        });
-
-      if (uploadError) {
-        throw new Error(
-          "Falha no upload para o Supabase: " + uploadError.message
-        );
+      // Remove imagem antiga
+      if (book.cover_path) {
+        const oldPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_path);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from("covers")
-        .getPublicUrl(fileName);
-
-      book.cover_url = publicUrlData.publicUrl;
+      const { filename } = req.file;
+      book.cover_path = filename;
       await book.save();
 
-      return res.json({ books: book });
+      return res.status(200).json({ message: 'Capa atualizada com sucesso.' });
     } catch (err) {
-      console.error("Erro ao atualizar a capa do livro:", err);
-      return res
-        .status(500)
-        .json({ error: "Falha interna ao atualizar a capa." });
-    }
-  }
-
-  async listAll(req, res) {
-    try {
-      const allBooks = await Book.findAll({
-        order: [["createdAt", "DESC"]],
-        include: { model: User, as: "submitter", attributes: ["name"] },
-      });
-      return res.json(allBooks);
-    } catch (err) {
-      return res
-        .status(500)
-        .json({ error: "Falha ao buscar todos os resumos." });
+      return res.status(500).json({ error: 'Erro ao atualizar capa do livro.' });
     }
   }
 
@@ -117,21 +74,68 @@ class AdminController {
 
     try {
       const book = await Book.findByPk(bookId);
+
       if (!book) {
-        return res.status(404).json({ error: "Resumo não encontrado." });
+        return res.status(404).json({ error: 'Livro não encontrado.' });
       }
 
-      if (book.cover_url && book.cover_url.includes("supabase")) {
-        const fileName = book.cover_url.split("/").pop();
-        await supabase.storage.from("covers").remove([fileName]);
+      if (book.cover_path) {
+        const coverPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_path);
+        if (fs.existsSync(coverPath)) {
+          fs.unlinkSync(coverPath);
+        }
       }
 
       await book.destroy();
-
-      return res.status(204).send();
+      return res.status(200).json({ message: 'Livro removido com sucesso.' });
     } catch (err) {
-      console.error("Erro ao deletar livro:", err);
-      return res.status(500).json({ error: "Falha ao deletar o resumo." });
+      return res.status(500).json({ error: 'Erro ao excluir livro.' });
+    }
+  }
+
+  async listPendingSummaries(req, res) {
+    try {
+      const summaries = await Summary.findAll({ where: { status: 'PENDING' } });
+      return res.status(200).json(summaries);
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao buscar resumos pendentes.' });
+    }
+  }
+
+  async updateSummaryStatus(req, res) {
+    const { summaryId } = req.params;
+    const { status } = req.body;
+
+    try {
+      const summary = await Summary.findByPk(summaryId);
+
+      if (!summary) {
+        return res.status(404).json({ error: 'Resumo não encontrado.' });
+      }
+
+      summary.status = status;
+      await summary.save();
+
+      return res.status(200).json({ message: 'Status do resumo atualizado com sucesso.' });
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao atualizar status do resumo.' });
+    }
+  }
+
+  async deleteSummary(req, res) {
+    const { summaryId } = req.params;
+
+    try {
+      const summary = await Summary.findByPk(summaryId);
+
+      if (!summary) {
+        return res.status(404).json({ error: 'Resumo não encontrado.' });
+      }
+
+      await summary.destroy();
+      return res.status(200).json({ message: 'Resumo removido com sucesso.' });
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao excluir resumo.' });
     }
   }
 }

@@ -21,28 +21,31 @@ const booksToSeed = [
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const booksWithDetails = booksToSeed.map(book => ({
-      ...book,
-      
-      summary: 'Este livro ainda não possui um resumo. Seja o primeiro a enviar o seu!',
-      
-      status: 'APPROVED',
-      slug: slugify(book.title, { 
-        lower: true, 
+    const booksToInsert = booksToSeed.map(book => ({
+      title: book.title,
+      author: book.author,
+      category: book.category,
+      cover_url: book.coverFilename,
+      slug: slugify(book.title, {
+        lower: true,
         strict: true,
         remove: /[*+~.()'"!:@]/g
       }),
-      cover_url: book.coverFilename,
+      status: 'PENDING',
+      user_id: null,
       created_at: new Date(),
-      updated_at: new Date(),
+      updated_at: new Date()
     }));
 
-    const booksForDb = booksWithDetails.map(({ coverFilename, ...rest }) => rest);
-
-    await queryInterface.bulkInsert('books', booksForDb, {});
+    await queryInterface.bulkInsert('books', booksToInsert, {});
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('books', null, {});
+    const titles = booksToSeed.map(book => book.title);
+    await queryInterface.bulkDelete('books', {
+      title: {
+        [Sequelize.Op.in]: titles
+      }
+    }, {});
   }
 };

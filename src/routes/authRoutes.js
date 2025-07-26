@@ -1,13 +1,20 @@
 const { Router } = require('express');
 const AuthController = require('../controllers/AuthController');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: Endpoints de autenticação de usuários
+ */
+
 const routes = new Router();
 
 /**
  * @swagger
- * /users:
+ * /auth/register:
  *   post:
- *     summary: Cria um novo usuário
+ *     summary: Registra um novo usuário
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -22,28 +29,26 @@ const routes = new Router();
  *             properties:
  *               name:
  *                 type: string
- *                 example: João da Silva
+ *                 example: Maria Oliveira
  *               email:
  *                 type: string
- *                 format: email
- *                 example: joao@email.com
+ *                 example: maria@email.com
  *               password:
  *                 type: string
- *                 format: password
  *                 example: 123456
  *     responses:
  *       201:
- *         description: Usuário criado com sucesso
+ *         description: Usuário registrado com sucesso
  *       400:
- *         description: Erro na requisição
+ *         description: Erro de validação ou usuário já existe
  */
-routes.post('/users', AuthController.register);
+routes.post('/register', AuthController.register);
 
 /**
  * @swagger
- * /login:
+ * /auth/login:
  *   post:
- *     summary: Autentica um usuário e retorna um token JWT
+ *     summary: Realiza login de um usuário
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -57,16 +62,16 @@ routes.post('/users', AuthController.register);
  *             properties:
  *               email:
  *                 type: string
- *                 example: joao@email.com
+ *                 example: maria@email.com
  *               password:
  *                 type: string
  *                 example: 123456
  *     responses:
  *       200:
- *         description: Autenticado com sucesso
+ *         description: Login bem-sucedido com token JWT
  *       401:
  *         description: Credenciais inválidas
  */
-routes.post('/login', AuthController.authenticate);
+routes.post('/login', AuthController.login);
 
 module.exports = routes;

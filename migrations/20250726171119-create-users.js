@@ -5,36 +5,38 @@ module.exports = {
     await queryInterface.createTable('users', {
       id: {
         type: Sequelize.INTEGER,
-        primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
+        primaryKey: true,
+        allowNull: false
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
+        unique: true
       },
-      password_hash: {
+      password: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       role: {
-        type: Sequelize.ENUM('USER', 'ADMIN'),
-        allowNull: false,
-        defaultValue: 'USER',
+        type: Sequelize.ENUM('user', 'admin'),
+        defaultValue: 'user',
+        allowNull: false
       },
       created_at: {
-        type: Sequelize.DATE,
         allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       updated_at: {
-        type: Sequelize.DATE,
         allowNull: false,
-      },
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+      }
     });
   },
 

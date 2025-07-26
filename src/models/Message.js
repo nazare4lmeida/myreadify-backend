@@ -2,22 +2,41 @@ const { Model, DataTypes } = require('sequelize');
 
 class Message extends Model {
   static init(sequelize) {
-    return super.init(
+    super.init(
       {
-        name: DataTypes.STRING,
-        email: DataTypes.STRING,
-        subject: DataTypes.STRING,
-        message: DataTypes.TEXT,
-        is_read: DataTypes.BOOLEAN,
+        name: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        email: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        subject: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        message: {
+          type: DataTypes.TEXT,
+          allowNull: false
+        }
       },
       {
         sequelize,
         modelName: 'Message',
         tableName: 'messages',
-        timestamps: true,
-        underscored: true,
+        underscored: true
       }
     );
+
+    return this;
+  }
+
+  static associate(models) {
+    this.belongsTo(models.User, {
+      foreignKey: 'user_id',
+      as: 'user'
+    });
   }
 }
 

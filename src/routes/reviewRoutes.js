@@ -2,110 +2,133 @@ const { Router } = require('express');
 const ReviewController = require('../controllers/ReviewController');
 const authMiddleware = require('../middlewares/auth');
 
-const routes = new Router();
-
 /**
  * @swagger
  * tags:
- *   name: Avaliações
- *   description: Gerenciamento de avaliações de livros
+ *   name: Reviews
+ *   description: Avaliações de livros e resumos
  */
 
-/**
- * @swagger
- * /books/{bookId}/reviews:
- *   get:
- *     summary: Lista todas as avaliações de um livro
- *     tags: [Avaliações]
- *     parameters:
- *       - in: path
- *         name: bookId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID do livro
- *     responses:
- *       200:
- *         description: Lista de avaliações
- *       404:
- *         description: Livro não encontrado
- */
-routes.get('/books/:bookId/reviews', ReviewController.index);
+const routes = new Router();
+
+routes.use(authMiddleware);
 
 /**
  * @swagger
  * /books/{bookId}/reviews:
  *   post:
- *     summary: Cria uma nova avaliação para um livro
- *     tags: [Avaliações]
- *     security:
- *       - bearerAuth: []
+ *     summary: Cria uma avaliação para um livro
+ *     tags: [Reviews]
  *     parameters:
  *       - in: path
  *         name: bookId
  *         required: true
  *         schema:
- *           type: string
- *         description: ID do livro
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - rating
- *               - comment
  *             properties:
  *               rating:
  *                 type: integer
- *                 example: 5
  *               comment:
  *                 type: string
- *                 example: Excelente leitura, recomendo!
  *     responses:
  *       201:
- *         description: Avaliação criada com sucesso
- *       400:
- *         description: Dados inválidos
- *       401:
- *         description: Não autorizado
+ *         description: Avaliação criada
  */
-routes.post('/books/:bookId/reviews', authMiddleware, ReviewController.store);
+routes.post('/books/:bookId/reviews', ReviewController.store);
 
 /**
  * @swagger
- * /reviews/my-reviews:
+ * /summaries/reviews:
+ *   post:
+ *     summary: Cria uma avaliação para um resumo
+ *     tags: [Reviews]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [rating, summary_id]
+ *             properties:
+ *               rating:
+ *                 type: integer
+ *               comment:
+ *                 type: string
+ *               summary_id:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Avaliação criada
+ */
+routes.post('/summaries/reviews', ReviewController.store);
+
+/**
+ * @swagger
+ * /books/{bookId}/reviews:
  *   get:
- *     summary: Lista as avaliações feitas pelo usuário autenticado
- *     tags: [Avaliações]
- *     security:
- *       - bearerAuth: []
+ *     summary: Lista as avaliações de um livro
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: bookId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de avaliações
+ */
+routes.get('/books/:bookId/reviews', ReviewController.index);
+
+/**
+ * @swagger
+ * /summaries/{summaryId}/reviews:
+ *   get:
+ *     summary: Lista as avaliações de um resumo
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: summaryId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de avaliações
+ */
+routes.get('/summaries/:summaryId/reviews', ReviewController.index);
+
+/**
+ * @swagger
+ * /reviews/my:
+ *   get:
+ *     summary: Lista as avaliações feitas pelo usuário logado
+ *     tags: [Reviews]
  *     responses:
  *       200:
  *         description: Lista de avaliações do usuário
- *       401:
- *         description: Não autorizado
  */
-routes.get('/reviews/my-reviews', authMiddleware, ReviewController.showMyReviews);
+routes.get('/reviews/my', ReviewController.showMyReviews);
 
 /**
  * @swagger
  * /reviews/{reviewId}:
  *   put:
- *     summary: Atualiza uma avaliação específica
- *     tags: [Avaliações]
- *     security:
- *       - bearerAuth: []
+ *     summary: Atualiza uma avaliação
+ *     tags: [Reviews]
  *     parameters:
  *       - in: path
  *         name: reviewId
  *         required: true
  *         schema:
- *           type: string
- *         description: ID da avaliação
+ *           type: integer
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -113,39 +136,30 @@ routes.get('/reviews/my-reviews', authMiddleware, ReviewController.showMyReviews
  *             properties:
  *               rating:
  *                 type: integer
- *                 example: 4
  *               comment:
  *                 type: string
- *                 example: Atualizei minha opinião sobre o livro.
  *     responses:
  *       200:
  *         description: Avaliação atualizada
- *       404:
- *         description: Avaliação não encontrada
  */
-routes.put('/reviews/:reviewId', authMiddleware, ReviewController.update);
+routes.put('/reviews/:reviewId', ReviewController.update);
 
 /**
  * @swagger
  * /reviews/{reviewId}:
  *   delete:
- *     summary: Remove uma avaliação específica
- *     tags: [Avaliações]
- *     security:
- *       - bearerAuth: []
+ *     summary: Remove uma avaliação
+ *     tags: [Reviews]
  *     parameters:
  *       - in: path
  *         name: reviewId
  *         required: true
  *         schema:
- *           type: string
- *         description: ID da avaliação
+ *           type: integer
  *     responses:
  *       204:
- *         description: Avaliação deletada com sucesso
- *       404:
- *         description: Avaliação não encontrada
+ *         description: Avaliação removida
  */
-routes.delete('/reviews/:reviewId', authMiddleware, ReviewController.destroy);
+routes.delete('/reviews/:reviewId', ReviewController.destroy);
 
 module.exports = routes;

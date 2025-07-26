@@ -1,21 +1,21 @@
 const { Router } = require("express");
 const ContactController = require("../controllers/ContactController");
 
-const routes = new Router();
-
 /**
  * @swagger
  * tags:
- *   name: Contato
- *   description: Envio de mensagens via formulário de contato
+ *   name: Contact
+ *   description: Rotas para envio de mensagens de contato
  */
+
+const routes = new Router();
 
 /**
  * @swagger
  * /contact:
  *   post:
- *     summary: Envia uma mensagem pelo formulário de contato
- *     tags: [Contato]
+ *     summary: Envia uma nova mensagem de contato
+ *     tags: [Contact]
  *     requestBody:
  *       required: true
  *       content:
@@ -29,22 +29,17 @@ const routes = new Router();
  *             properties:
  *               name:
  *                 type: string
- *                 example: João Silva
+ *                 example: Maria Oliveira
  *               email:
  *                 type: string
- *                 example: joao@email.com
+ *                 example: maria@email.com
  *               message:
  *                 type: string
- *                 example: Gostaria de saber mais sobre o projeto.
+ *                 example: Estou com um problema ao acessar o sistema.
  *     responses:
- *       201:
+ *       200:
  *         description: Mensagem enviada com sucesso
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro interno no servidor
  */
-
 routes.post("/contact", ContactController.store);
 
 module.exports = routes;

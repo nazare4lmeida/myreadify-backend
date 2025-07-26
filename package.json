@@ -1,15 +1,16 @@
 {
   "name": "myreadify-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend da aplicação Readify para resumos de livros",
   "main": "src/server.js",
   "scripts": {
-    "test": "jest",
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "jest",
+    "migrate": "sequelize db:migrate"
   },
   "keywords": [],
-  "author": "",
+  "author": "Maria de Nazaré Oliveira de Almeida",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

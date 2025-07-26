@@ -5,54 +5,54 @@ module.exports = {
     await queryInterface.createTable('books', {
       id: {
         type: Sequelize.INTEGER,
-        primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
+        primaryKey: true,
+        allowNull: false
       },
       title: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       author: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       category: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       cover_url: {
         type: Sequelize.STRING,
-        allowNull: true,
-      },
-      summary: {
-        type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: false
       },
       status: {
-        type: Sequelize.ENUM('PENDING', 'APPROVED'),
-        allowNull: false,
-        defaultValue: 'PENDING',
+        type: Sequelize.ENUM('PENDING', 'COMPLETED'),
+        defaultValue: 'PENDING'
       },
-      submitted_by: { 
+      user_id: {
         type: Sequelize.INTEGER,
+        allowNull: true,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL', 
-        allowNull: true,
+        onDelete: 'SET NULL'
+      },
+      slug: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
       },
       created_at: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: false
       },
       updated_at: {
         type: Sequelize.DATE,
-        allowNull: false,
-      },
+        allowNull: false
+      }
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface) => {
     await queryInterface.dropTable('books');
   }
 };

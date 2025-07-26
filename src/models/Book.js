@@ -1,23 +1,64 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes } = require('sequelize');
+const slugify = require('slugify');
 
 class Book extends Model {
   static init(sequelize) {
-    return super.init(
+    super.init(
       {
-        title: DataTypes.STRING,
-        author: DataTypes.STRING,
-        category: DataTypes.STRING,
-        cover_path: DataTypes.STRING,
-        slug: DataTypes.STRING,
-        status: DataTypes.ENUM("PENDING", "APPROVED"),
+        title: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        author: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        category: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        cover_path: {
+          type: DataTypes.STRING,
+          allowNull: false
+        },
+        status: {
+          type: DataTypes.ENUM('PENDING', 'COMPLETED'),
+          defaultValue: 'PENDING'
+        },
+        slug: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true
+        },
       },
       {
         sequelize,
-        tableName: "books",
-        timestamps: true,
+        modelName: 'Book',
+        tableName: 'books',
         underscored: true,
+        hooks: {
+          beforeValidate: (book) => {
+            if (book.title && !book.slug) {
+              book.slug = slugify(book.title, { lower: true });
+            }
+          }
+        }
       }
     );
+
+    return this;
+  }
+
+  static associate(models) {
+    this.belongsTo(models.User, {
+      foreignKey: 'user_id',
+      as: 'user'
+    });
+
+    this.hasOne(models.Summary, {
+      foreignKey: 'book_id',
+      as: 'summary'
+    });
   }
 }
 

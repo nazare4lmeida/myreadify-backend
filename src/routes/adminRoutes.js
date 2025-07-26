@@ -54,7 +54,7 @@ router.get("/admin/pending-books", AdminController.listPending);
  *             properties:
  *               status:
  *                 type: string
- *                 example: approved
+ *                 example: APPROVED
  *     responses:
  *       200:
  *         description: Status atualizado com sucesso
@@ -124,6 +124,70 @@ router.get("/admin/all-books", AdminController.listAll);
  *         description: Livro removido com sucesso
  */
 router.delete("/admin/books/:bookId", AdminController.deleteBook);
+
+/**
+ * @swagger
+ * /admin/pending-summaries:
+ *   get:
+ *     summary: Lista todos os resumos pendentes
+ *     tags: [Admin]
+ *     responses:
+ *       200:
+ *         description: Lista de resumos pendentes retornada com sucesso
+ */
+router.get("/admin/pending-summaries", AdminController.listPendingSummaries);
+
+/**
+ * @swagger
+ * /admin/summaries/{summaryId}/status:
+ *   patch:
+ *     summary: Atualiza o status de um resumo
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: summaryId
+ *         required: true
+ *         description: ID do resumo
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       description: Novo status do resumo
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 example: APPROVED
+ *     responses:
+ *       200:
+ *         description: Status atualizado com sucesso
+ */
+router.patch(
+  "/admin/summaries/:summaryId/status",
+  AdminController.updateSummaryStatus
+);
+
+/**
+ * @swagger
+ * /admin/summaries/{summaryId}:
+ *   delete:
+ *     summary: Remove um resumo do sistema
+ *     tags: [Admin]
+ *     parameters:
+ *       - in: path
+ *         name: summaryId
+ *         required: true
+ *         description: ID do resumo
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Resumo removido com sucesso
+ */
+router.delete("/admin/summaries/:summaryId", AdminController.deleteSummary);
 
 /**
  * @swagger

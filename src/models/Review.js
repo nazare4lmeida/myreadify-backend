@@ -1,24 +1,43 @@
-const { Model, DataTypes } = require("sequelize");
+const { Model, DataTypes } = require('sequelize');
 
 class Review extends Model {
   static init(sequelize) {
-    return super.init(
+    super.init(
       {
-        rating: DataTypes.INTEGER,
-        comment: DataTypes.TEXT,
+        content: {
+          type: DataTypes.TEXT,
+          allowNull: false
+        },
+        rating: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          validate: {
+            min: 1,
+            max: 5
+          }
+        }
       },
       {
         sequelize,
-        tableName: "reviews",
-        timestamps: true,
-        underscored: true,
+        modelName: 'Review',
+        tableName: 'reviews',
+        underscored: true
       }
     );
+
+    return this;
   }
 
   static associate(models) {
-    this.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
-    this.belongsTo(models.Book, { foreignKey: "book_id", as: "book" });
+    this.belongsTo(models.User, {
+      foreignKey: 'user_id',
+      as: 'user'
+    });
+
+    this.belongsTo(models.Book, {
+      foreignKey: 'book_id',
+      as: 'book'
+    });
   }
 }
 

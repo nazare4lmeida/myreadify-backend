@@ -1,38 +1,46 @@
+const { User } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../models');
-const { User } = db;
-
 
 class AuthController {
   async register(req, res) {
     const { name, email, password } = req.body;
 
     try {
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) {
-        return res.status(400).json({ error: 'Este e-mail já está cadastrado.' });
+      const userExists = await User.findOne({ where: { email } });
+
+      if (userExists) {
+        return res.status(400).json({ error: 'E-mail já cadastrado.' });
       }
 
-      const password_hash = await bcrypt.hash(password, 8);
+      const hashedPassword = await bcrypt.hash(password, 8);
 
       const user = await User.create({
         name,
         email,
-        password_hash,
+        password: hashedPassword,
+        role: 'USER',
       });
 
-      user.password_hash = undefined;
+      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
+        expiresIn: '7d',
+      });
 
-      return res.status(201).json(user);
-
+      return res.status(201).json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token,
+      });
     } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Falha no registro. Tente novamente.' });
+      return res.status(500).json({ error: 'Erro ao registrar usuário.' });
     }
   }
 
-  async authenticate(req, res) {
+  async login(req, res) {
     const { email, password } = req.body;
 
     try {
@@ -42,24 +50,27 @@ class AuthController {
         return res.status(401).json({ error: 'Usuário não encontrado.' });
       }
 
-      if (!(await user.checkPassword(password))) {
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch) {
         return res.status(401).json({ error: 'Senha incorreta.' });
       }
 
-      const { id, name, role } = user;
-
-      const token = jwt.sign({ id, role }, process.env.APP_SECRET, {
+      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
         expiresIn: '7d',
       });
-      
-      return res.json({
-        user: { id, name, email, role },
+
+      return res.status(200).json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
         token,
       });
-
     } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Falha na autenticação.' });
+      return res.status(500).json({ error: 'Erro ao fazer login.' });
     }
   }
 }

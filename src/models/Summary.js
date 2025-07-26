@@ -1,31 +1,48 @@
 const { Model, DataTypes } = require('sequelize');
+const slugify = require('slugify');
 
 class Summary extends Model {
   static init(sequelize) {
     super.init(
       {
-        title: DataTypes.STRING,
-        author: DataTypes.STRING,
-        category: DataTypes.STRING,
-        content: DataTypes.TEXT,
-        cover_path: DataTypes.STRING,
-        status: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED'),
-        slug: DataTypes.STRING,
+        content: {
+          type: DataTypes.TEXT,
+          allowNull: false
+        },
+        slug: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true
+        }
       },
       {
         sequelize,
+        modelName: 'Summary',
         tableName: 'summaries',
-        timestamps: true,
         underscored: true,
+        hooks: {
+          beforeValidate: (summary) => {
+            if (summary.content && !summary.slug) {
+              const preview = summary.content.slice(0, 50);
+              summary.slug = slugify(preview, { lower: true });
+            }
+          }
+        }
       }
     );
+
     return this;
   }
 
   static associate(models) {
+    this.belongsTo(models.Book, {
+      foreignKey: 'book_id',
+      as: 'book'
+    });
+
     this.belongsTo(models.User, {
       foreignKey: 'user_id',
-      as: 'submitter',
+      as: 'user'
     });
   }
 }
