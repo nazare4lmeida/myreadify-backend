@@ -112,7 +112,9 @@ module.exports = {
       updated_at: new Date(),
     }));
 
-    await queryInterface.bulkInsert("books", booksToInsert, {});
+    await queryInterface.bulkInsert("books", booksToInsert, {
+      ignoreDuplicates: true, // <-- ignora duplicados (com base na unique key do slug)
+    });
   },
 
   down: async (queryInterface, Sequelize) => {
