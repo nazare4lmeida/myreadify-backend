@@ -12,7 +12,7 @@ class SummaryController {
           'author',
           'category',
           'summary_text',
-          'cover_path',
+          'cover_url',
         ],
         order: [['createdAt', 'DESC']],
       });
@@ -35,7 +35,7 @@ class SummaryController {
         author,
         category,
         summary_text,
-        cover_path: coverImage,
+        cover_url: coverImage,
         status: 'PENDING',
       });
 

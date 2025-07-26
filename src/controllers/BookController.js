@@ -5,13 +5,17 @@ class BookController {
     try {
       const books = await Book.findAll({
         where: { status: 'APPROVED' },
-        attributes: ['id', 'title', 'author', 'category', 'cover_path'],
-        order: [['createdAt', 'DESC']],
+        order: [['created_at', 'DESC']],
+        attributes: ['id', 'title', 'author', 'category', ['cover_path', 'cover_url']],
       });
 
-      return res.status(200).json(books);
+      return res.json(books);
     } catch (error) {
-      console.error(error);
+      console.error('🔥 ERRO AO BUSCAR LIVROS:');
+      console.error('NOME:', error.name);
+      console.error('MENSAGEM:', error.message);
+      console.error('STACK:', error.stack);
+
       return res.status(500).json({ error: 'Erro ao buscar livros.' });
     }
   }
@@ -19,10 +23,15 @@ class BookController {
   async show(req, res) {
     try {
       const { bookId } = req.params;
-      // buscar o livro no banco ou mockado
+
       return res.status(200).json({ message: `Livro com ID ${bookId}` });
     } catch (error) {
-      return res.status(500).json({ error: "Erro ao buscar livro" });
+      console.error('🔥 ERRO AO BUSCAR LIVRO POR ID:');
+      console.error('NOME:', error.name);
+      console.error('MENSAGEM:', error.message);
+      console.error('STACK:', error.stack);
+
+      return res.status(500).json({ error: 'Erro ao buscar livro' });
     }
   }
 }

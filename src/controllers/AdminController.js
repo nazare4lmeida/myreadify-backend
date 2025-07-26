@@ -1,5 +1,6 @@
 const { Book, Summary, Message } = require('../models');
 const fs = require('fs');
+const { url } = require('inspector');
 const path = require('path');
 
 class AdminController {
@@ -52,15 +53,15 @@ class AdminController {
       }
 
       // Remove imagem antiga
-      if (book.cover_path) {
-        const oldPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_path);
+      if (book.cover_url) {
+        const oldPath = url.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
         if (fs.existsSync(oldPath)) {
           fs.unlinkSync(oldPath);
         }
       }
 
       const { filename } = req.file;
-      book.cover_path = filename;
+      book.cover_url = filename;
       await book.save();
 
       return res.status(200).json({ message: 'Capa atualizada com sucesso.' });
@@ -79,10 +80,10 @@ class AdminController {
         return res.status(404).json({ error: 'Livro não encontrado.' });
       }
 
-      if (book.cover_path) {
-        const coverPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_path);
-        if (fs.existsSync(coverPath)) {
-          fs.unlinkSync(coverPath);
+      if (book.cover_url) {
+        const coverPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
+        if (fs.existsSync(cover_url)) {
+          fs.unlinkSync(cover_url);
         }
       }
 

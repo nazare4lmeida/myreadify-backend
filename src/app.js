@@ -17,7 +17,7 @@ class App {
   constructor() {
     this.server = express();
     this.middlewares();
-    this.routes(); // A correção está dentro desta função
+    this.routes(); 
   }
 
   middlewares() {
