@@ -8,7 +8,6 @@ API RESTful para gerenciamento de usuários, livros, resumos e avaliações, par
 
 - Node.js + Express
 - PostgreSQL (via Supabase)
-- Docker + Docker Compose
 - JWT para autenticação
 - Swagger para documentação
 - Postman para testes
@@ -31,23 +30,16 @@ myreadify-backend/
 ├── tests/                # Testes com Jest/Supertest
 ├── docs/                 # Coleção Postman
 ├── swagger.js            # Configuração Swagger
-├── docker-compose.yml
 └── .env
 ```
 
 ---
 
-## 🐳 Docker + Supabase
+## Supabase
 
-Este projeto simula o uso do Supabase com PostgreSQL via Docker.
+Este projeto utiliza o Supabase como banco de dados.
 
-### Subindo com Docker
-
-```bash
-docker-compose up --build
-```
-
-Após isso, o backend estará disponível em `http://localhost:3000`.
+O backend estará disponível em `http://localhost:3000`.
 
 ---
 
@@ -128,13 +120,7 @@ cd myreadify-backend
 npm install
 ```
 
-### 3. Suba o banco com Docker
-
-```bash
-docker-compose up -d
-```
-
-### 4. Rode a aplicação
+### 3. Rode a aplicação
 
 ```bash
 npm start

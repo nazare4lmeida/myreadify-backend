@@ -5,7 +5,7 @@ const path = require('path');
 class AdminController {
   async listPending(req, res) {
     try {
-      const books = await Book.findAll({ where: { status: 'PENDING' } });
+      const books = await Book.findAll({ where: { status: 'COMPLETED' } });
       return res.status(200).json(books);
     } catch (err) {
       return res.status(500).json({ error: 'Erro ao buscar livros pendentes.' });

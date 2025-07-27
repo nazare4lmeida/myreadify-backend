@@ -1,7 +1,7 @@
 {
   "name": "myreadify-backend",
   "version": "1.0.0",
-  "description": "Backend da aplicação Readify para resumos de livros",
+  "description": "Backend da aplicação Readify (resumos de livros, com Supabase como banco de dados principal)",
   "main": "src/server.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",

@@ -32,4 +32,20 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+console.log("🔍 Configuração Sequelize:", {
+  host: config.host,
+  database: config.database,
+  username: config.username,
+  dialect: config.dialect,
+});
+
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log("🟢 Conectado com sucesso ao banco de dados!");
+  })
+  .catch((err) => {
+    console.error("🔴 Erro ao conectar no banco de dados:", err);
+  });
+
 module.exports = db;

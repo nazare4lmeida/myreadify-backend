@@ -14,7 +14,7 @@ class SummaryController {
           'summary_text',
           'cover_url',
         ],
-        order: [['createdAt', 'DESC']],
+        order: [['created_at', 'DESC']],
       });
 
       return res.status(200).json(summaries);
