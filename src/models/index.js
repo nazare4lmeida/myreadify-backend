@@ -42,10 +42,10 @@ console.log("🔍 Configuração Sequelize:", {
 sequelize
   .authenticate()
   .then(() => {
-    console.log("🟢 Conectado com sucesso ao banco de dados!");
+    console.log("Conectado com sucesso ao banco de dados!");
   })
   .catch((err) => {
-    console.error("🔴 Erro ao conectar no banco de dados:", err);
+    console.error("Erro ao conectar no banco de dados:", err);
   });
 
 module.exports = db;

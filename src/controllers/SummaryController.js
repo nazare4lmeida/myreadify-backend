@@ -1,8 +1,9 @@
-// >>> CORREÇÃO 1: Importamos 'Book' e 'User' diretamente do 'models' <<<
-const { Summary, Book, User } = require('../models');
+// src/controllers/SummaryController.js
+
+const { Summary, Book } = require('../models'); // Não precisa do User aqui
 
 class SummaryController {
-  // Sua função 'index' que lista todos os resumos aprovados
+  // Sua função 'index' (sem alterações)
   async index(req, res) {
     try {
       const summaries = await Summary.findAll({
@@ -15,7 +16,7 @@ class SummaryController {
           'summary_text',
           'cover_url',
         ],
-        order: [['createdAt', 'DESC']], // Corrigido para camelCase
+        order: [['createdAt', 'DESC']],
       });
       return res.status(200).json(summaries);
     } catch (error) {
@@ -24,57 +25,77 @@ class SummaryController {
     }
   }
 
-  // Sua função 'store' para enviar um novo resumo
+  // Sua função 'store' (sem alterações)
   async store(req, res) {
-    const { title, author, category, summary_text } = req.body;
-    const coverImage = req.file ? req.file.filename : null;
-    try {
-      const summary = await Summary.create({
-        title,
-        author,
-        category,
-        summary_text,
-        cover_url: coverImage,
-        status: 'PENDING',
-        user_id: req.userId, // Adicionado para associar ao usuário
-      });
-      return res.status(201).json(summary);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Erro ao cadastrar resumo.' });
-    }
-  }
+  // O frontend deve enviar 'title', 'author', etc., para o novo livro
+  // E também o 'summaryContent' para o texto do resumo.
+  const { title, author, category, summaryContent, slug } = req.body;
+  const coverImage = req.file ? req.file.filename : null;
 
-  // A função que estávamos corrigindo
+  try {
+    // Aqui está a correção:
+    // Nós salvamos o texto do resumo no campo 'content'.
+    // E os outros campos (title, author) são salvos em suas próprias colunas.
+    const summary = await Summary.create({
+      title, // Para os livros criados do zero
+      author, // Para os livros criados do zero
+      category, // Para os livros criados do zero
+      content: summaryContent, // <<< CORREÇÃO PRINCIPAL: O texto do resumo vai aqui
+      slug: slug || slugify(title, { lower: true }), // Usa o slug enviado ou cria um novo
+      cover_url: coverImage,
+      status: 'PENDING', // O novo campo status!
+      user_id: req.userId,
+    });
+    return res.status(201).json(summary);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao cadastrar resumo.' });
+  }
+}
+
+  // >>> INÍCIO DA CORREÇÃO <<<
   async getMySummaries(req, res) {
-    try {
-      const summaries = await Summary.findAll({
-        where: { user_id: req.userId },
-        include: [
-          {
-            // >>> CORREÇÃO 2: Usamos 'Book' diretamente, sem 'database.' <<<
-            model: Book,
-            as: 'book',
-            attributes: ['title', 'author'],
-          },
-        ],
-        order: [['createdAt', 'DESC']],
-      });
+  try {
+    const summaries = await Summary.findAll({
+      where: { user_id: req.userId },
+      include: [
+        {
+          model: Book,
+          as: 'book',
+          attributes: ['title', 'author', 'slug', 'cover_url'],
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
 
-      // A formatação dos dados para o frontend
-      const formattedSummaries = summaries.map(s => ({
+    // 1. A variável é criada e preenchida aqui
+    const formattedSummaries = summaries.map(s => {
+      if (!s.book) {
+        return null;
+      }
+      
+      return {
         id: s.id,
-        title: s.book ? s.book.title : 'Título não encontrado',
-        author: s.book ? s.book.author : 'Autor desconhecido',
         status: s.status,
-      }));
+        title: s.book.title,
+        author: s.book.author,
+        books: {
+          slug: s.book.slug,
+          cover_url: s.book.cover_url,
+        }
+      };
+    }).filter(s => s !== null);
 
-      return res.status(200).json(formattedSummaries);
-    } catch (error) {
-      console.error("Erro ao buscar 'meus resumos':", error);
-      return res.status(500).json({ error: "Erro ao buscar seus envios." });
-    }
+    // 2. A variável já existe e agora é usada para enviar a resposta
+    return res.status(200).json(formattedSummaries);
+
+  } catch (error) {
+    // Em caso de erro, esta parte será executada
+    console.error("Erro ao buscar 'meus resumos':", error);
+    return res.status(500).json({ error: "Erro ao buscar seus envios." });
   }
+}
+  // >>> FIM DA CORREÇÃO <<<
 }
 
 module.exports = new SummaryController();

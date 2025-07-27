@@ -1,4 +1,4 @@
-// src/models/book.js (Versão Completa e Corrigida)
+// src/models/Book.js (Versão Final e Corrigida)
 
 const { Model, DataTypes } = require("sequelize");
 
@@ -11,6 +11,10 @@ class Book extends Model {
         category: DataTypes.STRING,
         cover_url: DataTypes.STRING,
         status: DataTypes.STRING,
+
+        // >>> ESTA É A ÚNICA LINHA ADICIONADA <<<
+        // Informa ao Sequelize que a coluna 'slug' existe.
+        slug: DataTypes.STRING,
       },
       {
         sequelize,
@@ -25,15 +29,12 @@ class Book extends Model {
     return this;
   }
 
-  // >>> INÍCIO DA CORREÇÃO <<<
   static associate(models) {
-    // Definimos que um Livro (Book) pode ter muitos Resumos (Summary)
     this.hasMany(models.Summary, {
       foreignKey: 'book_id',
       as: 'summaries',
     });
   }
-  // >>> FIM DA CORREÇÃO <<<
 }
 
 module.exports = Book;
