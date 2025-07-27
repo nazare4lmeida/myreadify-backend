@@ -21,16 +21,23 @@ class User extends Model {
           type: DataTypes.STRING,
           allowNull: false,
         },
-        is_admin: {
-          type: DataTypes.BOOLEAN,
-          defaultValue: false,
+        // >>> INÍCIO DA CORREÇÃO <<<
+        // Trocamos o campo 'is_admin' pelo campo 'role' para
+        // corresponder exatamente à sua migration.
+        role: {
+          type: DataTypes.ENUM('user', 'admin'),
+          defaultValue: 'user',
+          allowNull: false,
         },
+        // >>> FIM DA CORREÇÃO <<<
       },
       {
         sequelize,
         modelName: 'User',
         tableName: 'users',
         hooks: {
+          // Este hook é opcional, pois seu AuthController já faz o hash.
+          // Mas é uma boa prática mantê-lo.
           beforeSave: async (user) => {
             if (user.changed('password')) {
               user.password = await bcrypt.hash(user.password, 10);

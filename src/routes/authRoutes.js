@@ -12,9 +12,9 @@ const routes = new Router();
 
 /**
  * @swagger
- * /auth/register:
+ * /register:
  *   post:
- *     summary: Registra um novo usuário
+ *     summary: Registra um novo usuário (com permissão 'user')
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -46,7 +46,7 @@ routes.post('/register', AuthController.register);
 
 /**
  * @swagger
- * /auth/login:
+ * /login:
  *   post:
  *     summary: Realiza login de um usuário
  *     tags: [Auth]
@@ -73,5 +73,44 @@ routes.post('/register', AuthController.register);
  *         description: Credenciais inválidas
  */
 routes.post('/login', AuthController.login);
+
+
+// >>> INÍCIO DA ALTERAÇÃO <<<
+
+/**
+ * @swagger
+ * /register/admin:
+ *   post:
+ *     summary: Registra um novo usuário administrador (rota de desenvolvimento)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Admin User
+ *               email:
+ *                 type: string
+ *                 example: admin@myreadify.com
+ *               password:
+ *                 type: string
+ *                 example: senhasecreta123
+ *     responses:
+ *       201:
+ *         description: Administrador registrado com sucesso
+ *       400:
+ *         description: E-mail já existe
+ */
+routes.post('/register/admin', AuthController.registerAdmin);
+// >>> FIM DA ALTERAÇÃO <<<
+
 
 module.exports = routes;

@@ -1,14 +1,18 @@
 const database = require("../models");
-
 const { Message } = database;
 const nodemailer = require("nodemailer");
 
 class MessageController {
   async index(req, res) {
     try {
+      // >>> A CORREÇÃO PRINCIPAL ESTÁ AQUI <<<
+      // Trocamos 'created_at' (nome da coluna no DB) por 'createdAt' 
+      // (nome da propriedade no modelo Sequelize).
       const messages = await Message.findAll({
-        order: [["created_at", "DESC"]],
+        order: [["createdAt", "DESC"]], 
       });
+      // >>> FIM DA CORREÇÃO <<<
+
       return res.json(messages);
     } catch (error) {
       console.error("Erro ao buscar mensagens:", error);

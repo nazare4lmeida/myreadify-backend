@@ -1,28 +1,30 @@
-require('dotenv').config();
+// middlewares/admin.js (VERSÃO CORRETA E PADRÃO)
+
 const { User } = require('../models');
 
 module.exports = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const emailHeader = req.headers['x-user-email']; // Custom header com o e-mail do usuário
-
-  // Verifica a chave secreta no header
-  if (!authHeader || authHeader !== `Bearer ${process.env.APP_SECRET}`) {
-    return res.status(401).json({ error: 'Acesso não autorizado. Token inválido.' });
-  }
-
-  if (!emailHeader) {
-    return res.status(400).json({ error: 'E-mail do usuário não fornecido no header.' });
+  // Neste ponto, o 'authMiddleware' já rodou e verificou o token.
+  // Ele também nos deu o 'req.userId'.
+  
+  if (!req.userId) {
+    return res.status(401).json({ error: 'Falha na autenticação. ID do usuário não encontrado.' });
   }
 
   try {
-    const user = await User.findOne({ where: { email: emailHeader } });
+    // Usamos o ID do usuário (que veio do token decodificado) para buscar suas informações
+    const user = await User.findByPk(req.userId);
 
-    if (!user || user.role !== 'ADMIN') {
+    // Verificamos se o usuário realmente existe e se o cargo dele é 'admin'
+    if (!user || user.role !== 'admin') {
+      // Se não for admin, negamos o acesso com 403 Forbidden
       return res.status(403).json({ error: 'Acesso negado. Requer permissão de administrador.' });
     }
 
+    // Se tudo estiver certo, anexa os dados do usuário admin na requisição e prossegue
+    req.user = user;
     return next();
+
   } catch (err) {
-    return res.status(500).json({ error: 'Erro ao verificar permissões de administrador.' });
+    return res.status(500).json({ error: 'Erro interno ao verificar permissões de administrador.' });
   }
 };
