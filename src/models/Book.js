@@ -1,3 +1,5 @@
+// src/models/book.js (Versão Completa e Corrigida)
+
 const { Model, DataTypes } = require("sequelize");
 
 class Book extends Model {
@@ -23,9 +25,15 @@ class Book extends Model {
     return this;
   }
 
+  // >>> INÍCIO DA CORREÇÃO <<<
   static associate(models) {
-    // associações futuras
+    // Definimos que um Livro (Book) pode ter muitos Resumos (Summary)
+    this.hasMany(models.Summary, {
+      foreignKey: 'book_id',
+      as: 'summaries',
+    });
   }
+  // >>> FIM DA CORREÇÃO <<<
 }
 
 module.exports = Book;

@@ -1,52 +1,17 @@
+// src/routes/summaryRoutes.js (Versão Completa e Corrigida)
+
 const { Router } = require("express");
 const authMiddleware = require("../middlewares/auth");
 const SummaryController = require("../controllers/SummaryController");
 
-/**
- * @swagger
- * tags:
- *   name: Summary
- *   description: Rotas para envio de resumos de livros
- */
-
 const routes = new Router();
 
-/**
- * @swagger
- * /summaries:
- *   post:
- *     summary: Envia um novo resumo de livro
- *     tags: [Summary]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - title
- *               - author
- *               - category
- *               - summary
- *             properties:
- *               title:
- *                 type: string
- *                 example: A Menina que Roubava Livros
- *               author:
- *                 type: string
- *                 example: Markus Zusak
- *               category:
- *                 type: string
- *                 example: Ficção
- *               summary:
- *                 type: string
- *                 example: Um resumo completo da obra.
- *     responses:
- *       201:
- *         description: Resumo enviado com sucesso
- */
+// Rota existente para enviar um resumo
 routes.post("/summaries", authMiddleware, SummaryController.store);
+
+// >>> INÍCIO DA NOVA ROTA <<<
+// Rota para o usuário logado buscar seus próprios resumos
+routes.get("/my-summaries", authMiddleware, SummaryController.getMySummaries);
+// >>> FIM DA NOVA ROTA <<<
 
 module.exports = routes;
