@@ -1,10 +1,8 @@
-// src/controllers/BookController.js (VERSÃO FINAL COMPLETA E CORRIGIDA)
-
-// <<< CORREÇÃO 1: Importar o modelo 'User' para podermos usá-lo >>>
 const { Book, Summary, User } = require("../models");
 
 class BookController {
-  // A função index para a CategoriesPage já está correta.
+  
+  // A função 'index' para a página de Categorias já está correta.
   async index(req, res) {
     try {
       const books = await Book.findAll({
@@ -29,7 +27,7 @@ class BookController {
     }
   }
 
-  // A correção principal está na função 'show'
+  // <<< A CORREÇÃO FINAL ESTÁ AQUI, NA FUNÇÃO 'show' >>>
   async show(req, res) {
     try {
       const { slug } = req.params;
@@ -42,11 +40,10 @@ class BookController {
           where: { status: 'COMPLETED' },
           required: false,
           attributes: ['content'],
-          // <<< CORREÇÃO 2: Nested Include - Incluímos o usuário DENTRO do resumo >>>
           include: [{
             model: User,
             as: 'user',
-            attributes: ['name'] // Pedimos apenas o nome do usuário
+            attributes: ['name']
           }]
         }]
       });
@@ -55,8 +52,11 @@ class BookController {
         return res.status(404).json({ error: "Livro não encontrado ou aguardando aprovação." });
       }
       
-      // <<< CORREÇÃO 3: Extrair os dados para enviar ao frontend >>>
-      // Pegamos o primeiro resumo aprovado, se houver
+      // Aplicamos a mesma lógica inteligente que funcionou antes
+      const finalCoverUrl = book.cover_url && book.cover_url.startsWith('/src/assets') 
+        ? book.cover_url      // Envia o caminho do mock diretamente
+        : book.full_cover_url;  // Usa o getter para a imagem da API/upload
+
       const summaryData = book.summaries && book.summaries.length > 0 ? book.summaries[0] : null;
 
       const formattedBook = {
@@ -65,10 +65,8 @@ class BookController {
         author: book.author,
         category: book.category,
         slug: book.slug,
-        cover_url: book.full_cover_url,
-        // Se houver um resumo, pegamos o conteúdo
+        cover_url: finalCoverUrl, // Usa a URL final e correta
         summary: summaryData ? summaryData.content : null,
-        // Se houver um usuário no resumo, pegamos o nome dele
         submitted_by: summaryData && summaryData.user ? summaryData.user.name : null,
       };
 
