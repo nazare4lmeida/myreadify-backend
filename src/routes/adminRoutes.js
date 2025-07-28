@@ -106,6 +106,7 @@ router.patch(
  *         description: Lista de livros retornada com sucesso
  */
 router.get("/admin/all-books", AdminController.listAll);
+router.get("/admin/all-summaries", AdminController.listAllSummaries);
 
 /**
  * @swagger

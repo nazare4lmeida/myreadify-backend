@@ -41,6 +41,44 @@ class AdminController {
     }
   }
 
+  async listPendingSummaries(req, res) {
+    try {
+      const summaries = await Summary.findAll({ 
+        where: { status: 'PENDING' },
+        // A PARTE QUE FALTAVA: Incluir os dados do livro e do usuário
+        include: [
+          { model: Book, as: 'book', attributes: ['id', 'title', 'author', 'cover_url'] },
+          { model: User, as: 'user', attributes: ['name'] }
+        ],
+        order: [['createdAt', 'ASC']],
+      });
+      return res.status(200).json(summaries);
+    } catch (err) {
+      console.error("Erro ao buscar resumos pendentes:", err);
+      return res.status(500).json({ error: 'Erro ao buscar resumos pendentes.' });
+    }
+  }
+  // >>> FIM DA CORREÇÃO 1 <<<
+
+
+  // >>> INÍCIO DA CORREÇÃO 2: A FUNÇÃO PARA TODOS OS RESUMOS <<<
+  // Renomeamos 'listAll' para 'listAllSummaries' e corrigimos a lógica
+  async listAllSummaries(req, res) {
+    try {
+      const summaries = await Summary.findAll({
+        // Sem 'where', para pegar todos
+        include: [
+          { model: Book, as: 'book', attributes: ['id', 'title', 'author'] },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
+      return res.status(200).json(summaries);
+    } catch (err) {
+      console.error("Erro ao buscar todos os resumos:", err);
+      return res.status(500).json({ error: 'Erro ao buscar todos os resumos.' });
+    }
+  }
+
   async updateCoverImage(req, res) {
     const { bookId } = req.params;
 
