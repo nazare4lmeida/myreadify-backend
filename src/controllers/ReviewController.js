@@ -2,7 +2,7 @@ const { Review, Book, Summary, User } = require('../models');
 
 class ReviewController {
   async store(req, res) {
-    const { rating, comment, summary_id } = req.body;
+    const { rating, content, summary_id } = req.body;
     const { bookId } = req.params; // bookId vem da rota se for avaliação de livro
     const userId = req.userId;
 
@@ -31,7 +31,7 @@ class ReviewController {
 
         const review = await Review.create({
           rating,
-          comment,
+          content,
           user_id: userId,
           book_id: bookId,
         });
@@ -58,7 +58,7 @@ class ReviewController {
 
       const review = await Review.create({
         rating,
-        comment,
+        content,
         user_id: userId,
         summary_id,
       });
@@ -151,7 +151,7 @@ class ReviewController {
 
   async update(req, res) {
     const { reviewId } = req.params;
-    const { rating, comment } = req.body;
+    const { rating, content } = req.body;
     const userId = req.userId;
 
     try {
@@ -164,7 +164,7 @@ class ReviewController {
         return res.status(403).json({ error: 'Você não tem permissão para editar esta avaliação.' });
       }
 
-      await review.update({ rating, comment });
+      await review.update({ rating, content });
 
       const updatedReview = await Review.findByPk(reviewId, {
         include: { model: User, as: 'user', attributes: ['id', 'name'] },

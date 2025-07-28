@@ -57,7 +57,7 @@ class AdminController {
       }
 
       if (book.cover_url) {
-        const oldPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
+        const oldPath = path.resolve(__dirname, '..', 'uploads', book.cover_url);
         if (fs.existsSync(oldPath)) {
           fs.unlinkSync(oldPath);
         }
@@ -84,7 +84,7 @@ class AdminController {
       }
 
       if (book.cover_url) {
-        const coverPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
+        const coverPath = path.resolve(__dirname, '..', 'uploads', book.cover_url);
         if (fs.existsSync(coverPath)) {
           fs.unlinkSync(coverPath);
         }

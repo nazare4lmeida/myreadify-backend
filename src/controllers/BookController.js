@@ -1,4 +1,5 @@
 const { Book } = require("../models");
+const slugify = require('slugify');
 
 class BookController {
   async index(req, res) {
