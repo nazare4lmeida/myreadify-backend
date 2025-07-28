@@ -17,7 +17,7 @@ class App {
   constructor() {
     this.server = express();
     this.middlewares();
-    this.routes(); 
+    this.routes();
   }
 
   middlewares() {
@@ -25,14 +25,15 @@ class App {
       cors({
         origin: [
           "http://localhost:5173",
-          "https://myreadify-frontend.vercel.app/",
+          // <<< CORREÇÃO: Remova a barra final da URL >>>
+          "https://myreadify-frontend.vercel.app",
         ],
       })
     );
     this.server.use(express.json());
     this.server.use(
       "/files",
-      express.static(path.resolve(__dirname, 'uploads'))
+      express.static(path.resolve(__dirname, "uploads"))
     );
   }
 
