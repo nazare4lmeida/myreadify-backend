@@ -1,8 +1,12 @@
-const { Book, Summary, Message } = require('../models');
+// src/controllers/AdminController.js (Versão Final Completa e Corrigida)
+
+// >>> CORREÇÃO 1: Adicionamos 'User' à importação <<<
+const { Book, Summary, Message, User } = require('../models');
 const fs = require('fs');
 const path = require('path');
 
 class AdminController {
+  // As funções 'listPending' e 'listAll' para livros continuam aqui sem alteração
   async listPending(req, res) {
     try {
       const books = await Book.findAll({ where: { status: 'COMPLETED' } });
@@ -21,6 +25,7 @@ class AdminController {
     }
   }
 
+  // As funções de manipulação de livros continuam aqui sem alteração
   async updateBookStatus(req, res) {
     const { bookId } = req.params;
     const { status } = req.body;
@@ -41,44 +46,6 @@ class AdminController {
     }
   }
 
-  async listPendingSummaries(req, res) {
-    try {
-      const summaries = await Summary.findAll({ 
-        where: { status: 'PENDING' },
-        // A PARTE QUE FALTAVA: Incluir os dados do livro e do usuário
-        include: [
-          { model: Book, as: 'book', attributes: ['id', 'title', 'author', 'cover_url'] },
-          { model: User, as: 'user', attributes: ['name'] }
-        ],
-        order: [['createdAt', 'ASC']],
-      });
-      return res.status(200).json(summaries);
-    } catch (err) {
-      console.error("Erro ao buscar resumos pendentes:", err);
-      return res.status(500).json({ error: 'Erro ao buscar resumos pendentes.' });
-    }
-  }
-  // >>> FIM DA CORREÇÃO 1 <<<
-
-
-  // >>> INÍCIO DA CORREÇÃO 2: A FUNÇÃO PARA TODOS OS RESUMOS <<<
-  // Renomeamos 'listAll' para 'listAllSummaries' e corrigimos a lógica
-  async listAllSummaries(req, res) {
-    try {
-      const summaries = await Summary.findAll({
-        // Sem 'where', para pegar todos
-        include: [
-          { model: Book, as: 'book', attributes: ['id', 'title', 'author'] },
-        ],
-        order: [['createdAt', 'DESC']],
-      });
-      return res.status(200).json(summaries);
-    } catch (err) {
-      console.error("Erro ao buscar todos os resumos:", err);
-      return res.status(500).json({ error: 'Erro ao buscar todos os resumos.' });
-    }
-  }
-
   async updateCoverImage(req, res) {
     const { bookId } = req.params;
 
@@ -89,7 +56,6 @@ class AdminController {
         return res.status(404).json({ error: 'Livro não encontrado.' });
       }
 
-      // Remove imagem antiga
       if (book.cover_url) {
         const oldPath = path.resolve(__dirname, '..', '..', 'uploads', book.cover_url);
         if (fs.existsSync(oldPath)) {
@@ -131,15 +97,44 @@ class AdminController {
     }
   }
 
+
+  // >>> CORREÇÃO 2: Garantimos que a única 'listPendingSummaries' é a versão completa <<<
   async listPendingSummaries(req, res) {
     try {
-      const summaries = await Summary.findAll({ where: { status: 'PENDING' } });
+      const summaries = await Summary.findAll({ 
+        where: { status: 'PENDING' },
+        // Esta parte inclui os dados necessários para o card
+        include: [
+          { model: Book, as: 'book', attributes: ['id', 'title', 'author', 'cover_url'] },
+          { model: User, as: 'user', attributes: ['name'] }
+        ],
+        order: [['createdAt', 'ASC']],
+      });
       return res.status(200).json(summaries);
     } catch (err) {
+      console.error("Erro ao buscar resumos pendentes:", err);
       return res.status(500).json({ error: 'Erro ao buscar resumos pendentes.' });
     }
   }
 
+  // A função para "Gerenciar Todos os Resumos", que busca todos os status
+  async listAllSummaries(req, res) {
+    try {
+      const summaries = await Summary.findAll({
+        include: [
+          { model: Book, as: 'book', attributes: ['id', 'title', 'author'] },
+        ],
+        order: [['createdAt', 'DESC']],
+      });
+      return res.status(200).json(summaries);
+    } catch (err) {
+      console.error("Erro ao buscar todos os resumos:", err);
+      return res.status(500).json({ error: 'Erro ao buscar todos os resumos.' });
+    }
+  }
+
+
+  // As funções de manipulação de resumos continuam aqui sem alteração
   async updateSummaryStatus(req, res) {
     const { summaryId } = req.params;
     const { status } = req.body;
