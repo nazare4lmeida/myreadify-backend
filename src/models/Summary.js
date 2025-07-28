@@ -1,18 +1,19 @@
+// src/models/Summary.js (VERSÃO FINAL COMPLETA E CORRIGIDA)
+
 const { Model, DataTypes } = require('sequelize');
-const slugify = require('slugify');
+
+// Removido o 'slugify' pois não é mais necessário aqui
+// const slugify = require('slugify');
 
 class Summary extends Model {
   static init(sequelize) {
     super.init(
       {
+        // <<< CORREÇÃO PRINCIPAL: O campo 'slug' foi completamente removido >>>
+        // Deixamos apenas os campos que realmente existem na tabela 'summaries'.
         content: {
           type: DataTypes.TEXT,
           allowNull: false
-        },
-        slug: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          unique: true
         },
         status: {
           type: DataTypes.STRING,
@@ -25,20 +26,17 @@ class Summary extends Model {
         modelName: 'Summary',
         tableName: 'summaries',
         underscored: true,
-        hooks: {
-          beforeValidate: (summary) => {
-            if (summary.content && !summary.slug) {
-              const preview = summary.content.slice(0, 50);
-              summary.slug = slugify(preview, { lower: true });
-            }
-          }
-        }
+        // O 'hook' para gerar slug foi removido pois o campo não existe mais.
+        timestamps: true, // Mantendo os timestamps se você os usa
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
       }
     );
 
     return this;
   }
 
+  // As associações estão corretas e não precisam de alteração.
   static associate(models) {
     this.belongsTo(models.Book, {
       foreignKey: 'book_id',
