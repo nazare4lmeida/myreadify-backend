@@ -1,5 +1,3 @@
-// src/controllers/AdminController.js (VERSÃO FINAL COMPLETA E CORRIGIDA)
-
 const { Book, Summary, Message, User } = require('../models');
 
 class AdminController {
@@ -19,7 +17,6 @@ class AdminController {
           { 
             model: Book, 
             as: 'book', 
-            // <<< CORREÇÃO PRINCIPAL: Pedimos a coluna REAL ('cover_url') >>>
             attributes: ['id', 'title', 'author', 'cover_url'] 
           },
           { model: User, as: 'user', attributes: ['name'] }
@@ -27,14 +24,17 @@ class AdminController {
         order: [['created_at', 'ASC']],
       });
 
-      // Formata a resposta para usar o GETTER e criar a URL completa
+      // <<< A CORREÇÃO FINAL ESTÁ AQUI (IDÊNTICA À QUE FUNCIONOU ANTES) >>>
+      // Aplicamos a mesma lógica inteligente para resolver a URL da imagem.
       const formattedSummaries = summaries.map(s => {
-        const summaryJson = s.toJSON(); // Converte para um objeto simples
+        const summaryJson = s.toJSON();
         
-        // Se o resumo tem um livro associado, usa o getter para criar a URL
         if (summaryJson.book) {
-            // Pega a URL do getter e a coloca no objeto que será enviado ao frontend
-            summaryJson.book.cover_url = s.book.full_cover_url;
+          const finalCoverUrl = s.book.cover_url && s.book.cover_url.startsWith('/src/assets') 
+            ? s.book.cover_url      // Usa o caminho do mock diretamente
+            : s.book.full_cover_url;  // Usa o getter para a imagem da API/upload
+
+          summaryJson.book.cover_url = finalCoverUrl;
         }
         return summaryJson;
       });
@@ -46,7 +46,7 @@ class AdminController {
     }
   }
 
-  // A função listAllSummaries já estava correta, mas a mantemos aqui para consistência.
+  // A função listAllSummaries já estava correta.
   async listAllSummaries(req, res) {
     try {
       const summaries = await Summary.findAll({
@@ -63,7 +63,7 @@ class AdminController {
     }
   }
 
-  // A função de aprovação já está correta e não precisa de alterações.
+  // A função de aprovação já está correta.
   async approveSummary(req, res) {
     try {
       const { summaryId } = req.params;
@@ -84,28 +84,7 @@ class AdminController {
     }
   }
 
-  async updateCoverImage(req, res) {
-    const { bookId } = req.params;
-    try {
-      const book = await Book.findByPk(bookId);
-      if (!book) return res.status(404).json({ error: 'Livro não encontrado.' });
-      
-      // Opcional: deletar a imagem antiga
-      if (book.cover_url) {
-        // a lógica para deletar o arquivo antigo iria aqui...
-      }
-
-      book.cover_url = req.file.filename;
-      await book.save();
-
-      return res.status(200).json({ message: 'Capa atualizada com sucesso.' });
-    } catch (err) {
-      console.error("Erro ao atualizar capa:", err);
-      return res.status(500).json({ error: 'Erro ao atualizar capa do livro.' });
-    }
-  }
-
-  // A função de rejeição já está correta e não precisa de alterações.
+  // A função de rejeição e as outras funções de admin já estão corretas.
   async rejectSummary(req, res) {
     const { summaryId } = req.params;
     try {

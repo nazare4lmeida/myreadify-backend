@@ -5,17 +5,20 @@ const slugify = require("slugify");
 
 class SummaryController {
   
-  // A função store já está correta e não precisa de alterações.
+  // A função 'store' já está correta para lidar com livros novos e livros do mock.
   async store(req, res) {
     try {
-      const { title, author, category, content } = req.body;
-      const coverImage = req.file ? req.file.filename : null;
+      const { title, author, category, content, slug: providedSlug, coverUrlMock } = req.body;
+      const coverImage = req.file ? req.file.filename : coverUrlMock;
 
+      if (!coverImage) {
+          return res.status(400).json({ error: "A imagem da capa é obrigatória." });
+      }
       if (!title) {
-        return res.status(400).json({ error: "O título é obrigatório para criar um novo livro." });
+        return res.status(400).json({ error: "O título é obrigatório." });
       }
 
-      const bookSlug = slugify(title, { lower: true, strict: true });
+      const bookSlug = providedSlug || slugify(title, { lower: true, strict: true });
 
       const [book] = await Book.findOrCreate({
         where: { slug: bookSlug },
@@ -44,7 +47,7 @@ class SummaryController {
     }
   }
 
-  // A correção está na função getMySummaries
+  // A correção final está aqui, na função getMySummaries
   async getMySummaries(req, res) {
     try {
       const summaries = await Summary.findAll({
@@ -56,22 +59,28 @@ class SummaryController {
             attributes: ["title", "author", "slug", "cover_url"],
           },
         ],
-        // <<< CORREÇÃO PRINCIPAL AQUI >>>
-        // Usamos o nome real da coluna do banco de dados (snake_case) na ordenação.
         order: [["created_at", "DESC"]],
       });
 
-      // O resto da formatação já está correto e funcionará.
       const formattedSummaries = summaries
         .map((s) => {
           if (!s.book) return null;
+          
+          // <<< A CORREÇÃO FINAL ESTÁ AQUI >>>
+          // Verificamos se a URL da capa é um caminho local do mock.
+          // Se for, enviamos o caminho como está.
+          // Se não for (é um arquivo de upload), usamos o getter 'full_cover_url' para montar a URL completa.
+          const finalCoverUrl = s.book.cover_url && s.book.cover_url.startsWith('/src/assets') 
+            ? s.book.cover_url      // Usa o caminho do mock diretamente
+            : s.book.full_cover_url;  // Usa o getter para a imagem da API/upload
+
           return {
             id: s.id,
             status: s.status,
             title: s.book.title,
             author: s.book.author,
             slug: s.book.slug,
-            cover_url: s.book.full_cover_url,
+            cover_url: finalCoverUrl, // Envia a URL final e correta para o frontend
           };
         })
         .filter((s) => s !== null);
