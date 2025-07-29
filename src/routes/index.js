@@ -1,29 +1,29 @@
-const { Router } = require('express');
+// ARQUIVO: src/routes/reviewRoutes.js (VERSÃO HÍBRIDA)
 
-// Importa todos os arquivos de rotas
-const authRoutes = require('./authRoutes');
-const adminRoutes = require('./adminRoutes');
-const bookRoutes = require('./bookRoutes');
-const summaryRoutes = require('./summaryRoutes'); // ✅ Novo
-const checkAuthRoutes = require('./checkAuthRoutes');
-const contactRoutes = require('./contactRoutes');
-const reviewRoutes = require('./reviewRoutes');
+const { Router } = require('express');
+const ReviewController = require('../controllers/ReviewController');
+const authMiddleware = require('../middlewares/auth');
 
 const routes = new Router();
 
-// --- CORREÇÃO DE ORDEM ---
+// --- 1. ROTAS PÚBLICAS ---
+// Estas rotas são definidas ANTES do middleware de autenticação.
+// Qualquer pessoa pode acessá-las.
+routes.get('/books/:slug/reviews', ReviewController.index);
+routes.get('/summaries/:summaryId/reviews', ReviewController.index);
 
-// 1. ROTAS PÚBLICAS: Ações que qualquer pessoa pode executar.
-// Devem ser carregadas primeiro para não serem afetadas por middlewares de autenticação.
-routes.use(contactRoutes);    // Enviar mensagem de contato
-routes.use(authRoutes);       // Fazer login e registro
-routes.use(bookRoutes);       // Ver livros mockados (sem resumo)
-routes.use(summaryRoutes);    // ✅ Ver resumos enviados por usuários
-routes.use(reviewRoutes);     // Ver avaliações e criar novas
 
-// 2. ROTAS PROTEGIDAS: Ações que exigem login.
-// Carregadas por último. O middleware de autenticação está dentro delas.
-routes.use(checkAuthRoutes);  // Verifica se o token é válido
-routes.use(adminRoutes);      // Ações de administrador
+// --- 2. MIDDLEWARE DE AUTENTICAÇÃO ---
+// A partir desta linha, TODAS as rotas abaixo exigirão login.
+routes.use(authMiddleware);
+
+
+// --- 3. ROTAS PRIVADAS ---
+// Estas rotas são definidas DEPOIS do middleware.
+routes.post('/books/:slug/reviews', ReviewController.store);
+routes.post('/summaries/reviews', ReviewController.store);
+routes.get('/reviews/my', ReviewController.showMyReviews);
+routes.put('/reviews/:reviewId', ReviewController.update);
+routes.delete('/reviews/:reviewId', ReviewController.destroy);
 
 module.exports = routes;
