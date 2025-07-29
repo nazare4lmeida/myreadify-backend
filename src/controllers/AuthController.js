@@ -1,7 +1,6 @@
 const { User } = require('../models');
-// bcrypt não é mais necessário aqui, mas podemos deixar para futuras referências
-const bcrypt = require('bcryptjs'); 
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // Mantido para o hook 'beforeSave' e checkPassword
+// const jwt = require('jsonwebtoken'); // Removido: Não é mais necessário aqui
 
 class AuthController {
   async register(req, res) {
@@ -13,18 +12,18 @@ class AuthController {
       if (userExists) {
         return res.status(400).json({ error: 'E-mail já cadastrado.' });
       }
-      
-      // >>> CORREÇÃO: Removemos o hash daqui e passamos a senha original <<<
+
       const user = await User.create({
         name,
         email,
-        password, // Passando a senha em texto plano. O hook do model vai cuidar da criptografia.
+        password,
         role: 'user',
       });
 
-      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
-        expiresIn: '40d',
-      });
+      // A geração de token foi removida daqui
+      // const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
+      //   expiresIn: '40d',
+      // });
 
       return res.status(201).json({
         user: {
@@ -33,7 +32,8 @@ class AuthController {
           email: user.email,
           role: user.role,
         },
-        token,
+        // token, // O token não é mais retornado
+        message: 'Registro realizado com sucesso!' // Adicionando uma mensagem de sucesso
       });
     } catch (err) {
       console.error("ERRO NO REGISTRO DE USUÁRIO:", err);
@@ -50,12 +50,11 @@ class AuthController {
       if (userExists) {
         return res.status(400).json({ error: 'E-mail de admin já cadastrado.' });
       }
-      
-      // >>> CORREÇÃO: Removemos o hash daqui também <<<
+
       const user = await User.create({
         name,
         email,
-        password, // Passando a senha em texto plano. O hook do model vai cuidar da criptografia.
+        password,
         role: 'admin',
       });
 
@@ -83,17 +82,17 @@ class AuthController {
       if (!user) {
         return res.status(401).json({ error: 'Usuário não encontrado.' });
       }
-      
-      // A sua função checkPassword no model faz exatamente isso. Vamos usá-la!
+
       const passwordMatch = await user.checkPassword(password);
 
       if (!passwordMatch) {
         return res.status(401).json({ error: 'Senha incorreta.' });
       }
 
-      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
-        expiresIn: '40d',
-      });
+      // A geração de token foi removida daqui
+      // const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
+      //   expiresIn: '40d',
+      // });
 
       return res.status(200).json({
         user: {
@@ -102,7 +101,8 @@ class AuthController {
           email: user.email,
           role: user.role,
         },
-        token,
+        // token, // O token não é mais retornado
+        message: 'Login realizado com sucesso!' // Adicionando uma mensagem de sucesso
       });
     } catch (err) {
       console.error("ERRO NO LOGIN:", err);

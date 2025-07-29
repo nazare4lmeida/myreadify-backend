@@ -1,26 +1,28 @@
-// middlewares/admin.js (VERSÃO CORRETA E PADRÃO)
+// middlewares/admin.js
 
+// Este middleware depende do authMiddleware para popular req.userId.
+// Como estamos removendo o token temporariamente, este middleware não será funcional.
+// Para testar, você deve REMOVER AS CHAMADAS a este middleware em suas rotas (ex: adminRoutes.js).
+// Se quiser, pode comentar a lógica interna para evitar erros caso seja acidentalmente chamado,
+// mas o ideal é não o chamar em nenhuma rota neste período sem autenticação.
+
+/*
 const { User } = require('../models');
 
 module.exports = async (req, res, next) => {
-  // Neste ponto, o 'authMiddleware' já rodou e verificou o token.
-  // Ele também nos deu o 'req.userId'.
-  
   if (!req.userId) {
+    // Se não há req.userId (porque authMiddleware não rodou ou não há token),
+    // isso já seria um problema.
     return res.status(401).json({ error: 'Falha na autenticação. ID do usuário não encontrado.' });
   }
 
   try {
-    // Usamos o ID do usuário (que veio do token decodificado) para buscar suas informações
     const user = await User.findByPk(req.userId);
 
-    // Verificamos se o usuário realmente existe e se o cargo dele é 'admin'
     if (!user || user.role !== 'admin') {
-      // Se não for admin, negamos o acesso com 403 Forbidden
       return res.status(403).json({ error: 'Acesso negado. Requer permissão de administrador.' });
     }
 
-    // Se tudo estiver certo, anexa os dados do usuário admin na requisição e prossegue
     req.user = user;
     return next();
 
@@ -28,3 +30,15 @@ module.exports = async (req, res, next) => {
     return res.status(500).json({ error: 'Erro interno ao verificar permissões de administrador.' });
   }
 };
+*/
+
+// Para o propósito deste teste sem token, se você mantiver este arquivo,
+// certifique-se de que NENHUMA ROTA o esteja usando.
+module.exports = (req, res, next) => {
+  console.warn("AVISO: O middleware de admin está desativado temporariamente (sem token).");
+  // Permite que todas as requisições passem para rotas que o chamem,
+  // mas as rotas de admin *não terão proteção*.
+  // Para rotas de admin, é MELHOR REMOVER a chamada a este middleware delas.
+  next();
+};
+
