@@ -1,29 +1,23 @@
-// ARQUIVO: src/routes/reviewRoutes.js (VERSÃO HÍBRIDA)
+// src/routes/index.js
+const { Router } = require("express");
 
-const { Router } = require('express');
-const ReviewController = require('../controllers/ReviewController');
-const authMiddleware = require('../middlewares/auth');
+const bookRoutes = require("./bookRoutes");
+const reviewRoutes = require("./reviewRoutes");
+const authRoutes = require("./authRoutes");
+const adminRoutes = require("./adminRoutes");
+const contactRoutes = require("./contactRoutes");
+const summaryRoutes = require("./summaryRoutes");
+const checkAuthRoutes = require("./checkAuthRoutes");
 
 const routes = new Router();
 
-// --- 1. ROTAS PÚBLICAS ---
-// Estas rotas são definidas ANTES do middleware de autenticação.
-// Qualquer pessoa pode acessá-las.
-routes.get('/books/:slug/reviews', ReviewController.index);
-routes.get('/summaries/:summaryId/reviews', ReviewController.index);
-
-
-// --- 2. MIDDLEWARE DE AUTENTICAÇÃO ---
-// A partir desta linha, TODAS as rotas abaixo exigirão login.
-routes.use(authMiddleware);
-
-
-// --- 3. ROTAS PRIVADAS ---
-// Estas rotas são definidas DEPOIS do middleware.
-routes.post('/books/:slug/reviews', ReviewController.store);
-routes.post('/summaries/reviews', ReviewController.store);
-routes.get('/reviews/my', ReviewController.showMyReviews);
-routes.put('/reviews/:reviewId', ReviewController.update);
-routes.delete('/reviews/:reviewId', ReviewController.destroy);
+// só monta os grupos de rotas, sem duplicar paths
+routes.use(bookRoutes);
+routes.use(reviewRoutes);
+routes.use(authRoutes);
+routes.use(adminRoutes);
+routes.use(contactRoutes);
+routes.use(summaryRoutes);
+routes.use(checkAuthRoutes);
 
 module.exports = routes;

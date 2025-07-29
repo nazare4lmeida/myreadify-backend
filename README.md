@@ -100,7 +100,7 @@ Crie um arquivo `.env` na raiz com o seguinte conteúdo:
 ```
 PORT=3000
 DATABASE_URL=postgresql://myreadify_user:myreadify_password@localhost:5432/myreadify_db
-JWT_SECRET=sua_chave_secreta
+APP_SECRET=sua_chave_secreta
 ```
 
 ---

@@ -1,67 +1,88 @@
-const { Review, Book, User, Summary } = require("../models");
+const { Review, Book, User } = require("../models");
 
 class ReviewController {
-  // A função store e as outras não são o problema, mas as deixamos aqui.
+  // Criar avaliação
   async store(req, res) {
-    /* ...código completo da função store... */
-  }
+    const { rating, content } = req.body;
+    const { slug } = req.params;
+    const userId = req.userId;
 
-  // <<< A FUNÇÃO QUE ESTÁ FALHANDO E QUE VAMOS DIAGNOSTICAR >>>
-  async index(req, res) {
+    // Logs para depuração no terminal do seu backend
+    console.log("Backend: Recebida requisição para criar avaliação:", { rating, content, slug, userId });
+
     try {
-      console.log("-----------------------------------------");
-      console.log("LOG 1: A requisição para buscar reviews começou.");
-
-      const { slug } = req.params;
-      console.log(`LOG 2: Slug recebido da URL = ${slug}`);
-
-      if (!slug) {
-        console.log("LOG 2.1: Erro! Nenhum slug foi fornecido na URL.");
-        return res.status(400).json({ error: "Slug do livro não fornecido." });
+      if (!rating || !content) {
+        return res
+          .status(400)
+          .json({ error: "Nota e comentário são obrigatórios." });
       }
 
-      // Vamos buscar o livro usando o slug para obter seu ID.
-      const book = await Book.findOne({ where: { slug: slug } });
-      console.log(
-        "LOG 3: Resultado da busca do livro pelo slug:",
-        book
-          ? `Livro encontrado com ID ${book.id}`
-          : "Nenhum livro encontrado com este slug."
-      );
-
+      const book = await Book.findOne({ where: { slug } });
       if (!book) {
-        console.log("LOG 3.1: Erro! O livro não existe no banco de dados.");
+        console.log("Backend: Livro com slug não encontrado:", slug);
         return res.status(404).json({ error: "Livro não encontrado." });
       }
 
-      console.log(`LOG 4: Tentando buscar reviews para o book_id = ${book.id}`);
+      const existingReview = await Review.findOne({
+        where: { user_id: userId, book_id: book.id },
+      });
+      if (existingReview) {
+        console.log("Backend: Usuário já avaliou este livro.");
+        return res.status(409).json({ error: "Você já avaliou este livro." });
+      }
 
-      // Esta é a busca final e o ponto mais provável do erro.
+      console.log("Backend: Criando avaliação no banco de dados...");
+      const review = await Review.create({
+        rating,
+        content,
+        user_id: userId,
+        book_id: book.id,
+        slug: book.slug, // Mantendo caso seu modelo precise
+      });
+
+      console.log("Backend: Avaliação criada com ID:", review.id);
+
+      // Em vez de buscar a avaliação inteira novamente, buscamos apenas os dados do usuário
+      const user = await User.findByPk(userId, { attributes: ["id", "name"] });
+
+      // Combinamos os dados da avaliação recém-criada com os dados do usuário
+      const responseData = {
+        ...review.toJSON(),
+        user: user.toJSON(),
+      };
+
+      console.log("Backend: Enviando resposta de sucesso para o frontend.");
+      return res.status(201).json(responseData);
+
+    } catch (err) {
+      console.error("Backend: ERRO CRÍTICO ao criar avaliação:", err);
+      return res.status(500).json({ error: "Falha ao criar a avaliação." });
+    }
+  }
+
+  // Listar avaliações de um livro
+  async index(req, res) {
+    const { slug } = req.params;
+    try {
+      const book = await Book.findOne({ where: { slug } });
+      if (!book) {
+        return res.status(404).json({ error: "Livro não encontrado." });
+      }
+
       const reviews = await Review.findAll({
         where: { book_id: book.id },
         order: [["created_at", "DESC"]],
-        include: {
-          model: User,
-          as: "user",
-          attributes: ["id", "name"],
-        },
+        include: { model: User, as: "user", attributes: ["id", "name"] },
       });
 
-      console.log(
-        `LOG 5: Busca de reviews concluída. Encontradas ${reviews.length} avaliações.`
-      );
-      console.log("-----------------------------------------");
-      return res.json(reviews);
+      return res.status(200).json(reviews || []);
     } catch (err) {
-      // <<< ESTE É O LOG MAIS IMPORTANTE DE TODOS >>>
-      // Se o código cair aqui, este log nos dará o erro exato do Sequelize/Banco de Dados.
-      console.error("🔥 🔥 🔥 ERRO PEGO NO BLOCO CATCH! 🔥 🔥 🔥");
-      console.error("O erro detalhado é:", err);
-      console.error("-----------------------------------------");
-
-      return res.status(500).json({ error: "Falha ao listar as avaliações." });
+      console.error("Erro ao listar avaliações:", err);
+      return res.status(500).json({ error: "Falha ao listar avaliações." });
     }
   }
+
+  // Listar minhas avaliações
   async showMyReviews(req, res) {
     const userId = req.userId;
 
@@ -72,12 +93,7 @@ class ReviewController {
           {
             model: Book,
             as: "book",
-            attributes: ["id", "title", "cover_url"],
-          },
-          {
-            model: Summary,
-            as: "summary",
-            attributes: ["id", "title"],
+            attributes: ["id", "title", "cover_url", "slug"],
           },
         ],
         order: [["created_at", "DESC"]],
@@ -85,12 +101,12 @@ class ReviewController {
 
       return res.json(reviews);
     } catch (err) {
-      return res
-        .status(500)
-        .json({ error: "Falha ao buscar suas avaliações." });
+      console.error("Erro ao buscar minhas avaliações:", err);
+      return res.status(500).json({ error: "Falha ao buscar suas avaliações." });
     }
   }
 
+  // Atualizar avaliação
   async update(req, res) {
     const { reviewId } = req.params;
     const { rating, content } = req.body;
@@ -103,9 +119,9 @@ class ReviewController {
       }
 
       if (review.user_id !== userId) {
-        return res.status(403).json({
-          error: "Você não tem permissão para editar esta avaliação.",
-        });
+        return res
+          .status(403)
+          .json({ error: "Você não tem permissão para editar esta avaliação." });
       }
 
       await review.update({ rating, content });
@@ -116,10 +132,12 @@ class ReviewController {
 
       return res.json(updatedReview);
     } catch (err) {
+      console.error("Erro ao atualizar avaliação:", err);
       return res.status(500).json({ error: "Falha ao atualizar a avaliação." });
     }
   }
 
+  // Deletar avaliação
   async destroy(req, res) {
     const { reviewId } = req.params;
     const userId = req.userId;
@@ -131,15 +149,16 @@ class ReviewController {
       }
 
       if (review.user_id !== userId) {
-        return res.status(403).json({
-          error: "Você não tem permissão para deletar esta avaliação.",
-        });
+        return res
+          .status(403)
+          .json({ error: "Você não tem permissão para deletar esta avaliação." });
       }
 
       await review.destroy();
 
       return res.status(204).send();
     } catch (err) {
+      console.error("Erro ao deletar avaliação:", err);
       return res.status(500).json({ error: "Falha ao deletar a avaliação." });
     }
   }

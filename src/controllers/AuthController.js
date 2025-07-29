@@ -23,7 +23,7 @@ class AuthController {
       });
 
       const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
-        expiresIn: '7d',
+        expiresIn: '40d',
       });
 
       return res.status(201).json({
@@ -92,7 +92,7 @@ class AuthController {
       }
 
       const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
-        expiresIn: '7d',
+        expiresIn: '40d',
       });
 
       return res.status(200).json({

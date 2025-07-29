@@ -1,22 +1,27 @@
-const { Router } = require('express');
-const ReviewController = require('../controllers/ReviewController');
-const authMiddleware = require('../middlewares/auth');
+const { Router } = require("express");
+const ReviewController = require("../controllers/ReviewController");
+const authMiddleware = require("../middlewares/auth");
 
 const routes = new Router();
 
-// --- 1. ROTAS PÚBLICAS (definidas ANTES do middleware) ---
-routes.get('/books/:slug/reviews', ReviewController.index);
-routes.get('/summaries/:summaryId/reviews', ReviewController.index); // Mantemos esta por consistência
+// --- Rotas públicas ---
+// Lista as avaliações de um livro pelo slug
+routes.get("/books/:slug/reviews", ReviewController.index);
 
-// --- 2. MIDDLEWARE DE AUTENTICAÇÃO ---
-// A partir desta linha, todas as rotas abaixo exigirão login
+// --- Middleware de autenticação ---
 routes.use(authMiddleware);
 
-// --- 3. ROTAS PRIVADAS (definidas DEPOIS do middleware) ---
-routes.post('/books/:slug/reviews', ReviewController.store); // << USA SLUG
-routes.post('/summaries/reviews', ReviewController.store);
-routes.get('/reviews/my', ReviewController.showMyReviews);
-routes.put('/reviews/:reviewId', ReviewController.update);
-routes.delete('/reviews/:reviewId', ReviewController.destroy);
+// --- Rotas privadas ---
+// Criar uma avaliação para um livro (usando slug)
+routes.post("/books/:slug/reviews", ReviewController.store);
+
+// Listar as minhas avaliações
+routes.get("/reviews/my", ReviewController.showMyReviews);
+
+// Atualizar uma avaliação
+routes.put("/reviews/:reviewId", ReviewController.update);
+
+// Deletar uma avaliação
+routes.delete("/reviews/:reviewId", ReviewController.destroy);
 
 module.exports = routes;

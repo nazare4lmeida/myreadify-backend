@@ -5,13 +5,7 @@ const path = require("path");
 const { sequelize } = require("./models");
 
 // Importação dos arquivos de rotas
-const authRoutes = require("./routes/authRoutes");
-const bookRoutes = require("./routes/bookRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
-const checkAuthRoutes = require("./routes/checkAuthRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const contactRoutes = require("./routes/contactRoutes");
-const summaryRoutes = require("./routes/summaryRoutes");
+const allRoutes = require("./routes"); // Importe o index.js da pasta routes
 
 class App {
   constructor() {
@@ -21,15 +15,13 @@ class App {
   }
 
   middlewares() {
-    this.server.use(
-      cors({
-        origin: [
-          "http://localhost:5173",
-          // <<< CORREÇÃO: Remova a barra final da URL >>>
-          "https://myreadify-frontend.vercel.app",
-        ],
-      })
-    );
+    // Configuração do CORS
+    this.server.use(cors({
+      origin: ["http://localhost:5173", "https://myreadify-frontend.vercel.app"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    }));
+
     this.server.use(express.json());
     this.server.use(
       "/files",
@@ -61,22 +53,7 @@ class App {
       res.json({ message: "API MyReadify está no ar!" });
     });
 
-    // --- INÍCIO DA CORREÇÃO DE ORDEM ---
-
-    // 1. ROTAS PÚBLICAS: Ações que qualquer pessoa pode fazer, sem precisar de login.
-    this.server.use("/api", contactRoutes);
-    this.server.use("/api", authRoutes);
-
-    // 2. ROTAS DE LEITURA PÚBLICA: Ações de visualização que não precisam de login.
-    this.server.use("/api", bookRoutes);
-    this.server.use("/api", summaryRoutes); // ✅ Adicionada corretamente
-    this.server.use("/api", reviewRoutes);
-
-    // 3. ROTAS PROTEGIDAS: Exigem um token de autenticação válido.
-    this.server.use("/api", checkAuthRoutes);
-    this.server.use("/api", adminRoutes);
-
-    // --- FIM DA CORREÇÃO DE ORDEM ---
+    this.server.use("/api", allRoutes);
   }
 }
 

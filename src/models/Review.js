@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes } = require("sequelize");
 
 class Review extends Model {
   static init(sequelize) {
@@ -6,33 +6,44 @@ class Review extends Model {
       {
         content: {
           type: DataTypes.TEXT,
-          allowNull: false
+          allowNull: false,
         },
         rating: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          validate: { min: 1, max: 5 }
+          validate: { min: 1, max: 5 },
         },
-        // DEFINIMOS TODOS OS CAMPOS QUE A TABELA USA
-        user_id: DataTypes.INTEGER,
-        book_id: DataTypes.INTEGER,
-        summary_id: DataTypes.INTEGER,
-        slug: DataTypes.STRING, // <<< ESSA LINHA É A MAIS IMPORTANTE
+        user_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        book_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        summary_id: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        slug: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
       },
       {
         sequelize,
-        modelName: 'Review',
-        tableName: 'reviews',
-        underscored: true
+        modelName: "Review",
+        tableName: "reviews",
+        underscored: true,
       }
     );
     return this;
   }
 
   static associate(models) {
-    this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
-    this.belongsTo(models.Book, { foreignKey: 'book_id', as: 'book' });
-    this.belongsTo(models.Summary, { foreignKey: 'summary_id', as: 'summary' });
+    this.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
+    this.belongsTo(models.Book, { foreignKey: "book_id", as: "book" });
+    this.belongsTo(models.Summary, { foreignKey: "summary_id", as: "summary" });
   }
 }
 
