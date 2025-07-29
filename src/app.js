@@ -4,16 +4,12 @@ const cors = require("cors");
 const path = require("path");
 const { sequelize } = require("./models");
 
-// Middlewares adicionais necessários
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-
 const allRoutes = require("./routes");
 
 class App {
   constructor() {
     this.server = express();
-    
+
     // Configurações essenciais de segurança e CORS
     this.securityMiddlewares();
     this.middlewares();
@@ -21,15 +17,10 @@ class App {
   }
 
   securityMiddlewares() {
-    // Limite de requisições para evitar abuso
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutos
-      max: 100 // limite por IP
-    });
+    // É crucial definir 'trust proxy' antes de qualquer middleware que precise do IP real,
+    // caso o app esteja atrás de um proxy (como em ambientes de hospedagem como Render, Vercel).
+    this.server.set('trust proxy', true);
 
-    this.server.use(limiter);
-    this.server.use(helmet());
-    
     // Configuração completa de CORS
     this.server.use(cors({
       origin: [
@@ -47,7 +38,7 @@ class App {
   middlewares() {
     this.server.use(express.json({ limit: '10kb' }));
     this.server.use(express.urlencoded({ extended: true }));
-    
+
     this.server.use(
       "/files",
       express.static(path.resolve(__dirname, "uploads"), {
@@ -89,7 +80,7 @@ class App {
 
     // Todas as rotas da API
     this.server.use("/api", allRoutes);
-    
+
     // Middleware de erro global
     this.server.use((err, req, res, next) => {
       console.error("Global error handler:", err);
@@ -105,4 +96,3 @@ class App {
 
 // Exporta uma instância configurada do servidor
 module.exports = new App().server;
-
