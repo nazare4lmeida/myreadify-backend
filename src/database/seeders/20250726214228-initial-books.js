@@ -101,7 +101,7 @@ module.exports = {
       author: book.author,
       category: book.category,
       // CORREÇÃO CRÍTICA AQUI: Salvar o caminho relativo completo
-      cover_url: `/src/assets${book.coverFilename}`, 
+      cover_url: `/src/assets/${book.coverFilename}`, 
       slug: slugify(book.title, {
         lower: true,
         strict: true,
