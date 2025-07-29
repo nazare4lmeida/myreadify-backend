@@ -6,16 +6,20 @@ const authRoutes = require("./authRoutes");
 const adminRoutes = require("./adminRoutes");
 const contactRoutes = require("./contactRoutes");
 const summaryRoutes = require("./summaryRoutes");
-// const checkAuthRoutes = require("./checkAuthRoutes"); // Removido: Não é mais necessário
 
 const routes = new Router();
 
-routes.use(bookRoutes);
-routes.use(reviewRoutes); // VERIFICAR: Se esta rota usa 'authMiddleware', remova-o nela.
+// As rotas de autenticação (login/registro) NUNCA devem ser protegidas por authMiddleware
+// Elas devem vir primeiro ou não ter middlewares aplicados a elas globalmente aqui.
 routes.use(authRoutes);
-routes.use(adminRoutes); // VERIFICAR: Se esta rota usa 'authMiddleware', remova-o nela.
+
+// As rotas abaixo agora dependem do authMiddleware que já foi reabilitado dentro de seus próprios arquivos
+// (e.g., reviewRoutes.js, adminRoutes.js, summaryRoutes.js)
+// Não coloque 'routes.use(authMiddleware);' aqui globalmente, pois afetaria o login.
+routes.use(bookRoutes);
+routes.use(reviewRoutes);
+routes.use(adminRoutes);
 routes.use(contactRoutes);
-routes.use(summaryRoutes); // VERIFICAR: Se esta rota usa 'authMiddleware', remova-o nela.
-// routes.use(checkAuthRoutes); // Removido
+routes.use(summaryRoutes);
 
 module.exports = routes;
