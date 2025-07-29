@@ -5,11 +5,11 @@ const slugify = require("slugify");
 
 class SummaryController {
   
-  // A função 'store' já está correta para lidar com livros novos e livros do mock.
   async store(req, res) {
     try {
       const { title, author, category, content, slug: providedSlug, coverUrlMock } = req.body;
-      const coverImage = req.file ? req.file.filename : coverUrlMock;
+      // Multer anexa o arquivo em req.file
+      const coverImage = req.file ? req.file.filename : coverUrlMock; // coverUrlMock deve ser o filename, não o path completo
 
       if (!coverImage) {
           return res.status(400).json({ error: "A imagem da capa é obrigatória." });
@@ -26,7 +26,9 @@ class SummaryController {
           title: title,
           author: author,
           category: category,
-          cover_url: coverImage,
+          // Se for um livro do mock, coverImage virá como '/src/assets/...'
+          // Se for um upload, coverImage virá como 'hash-filename.jpg'
+          cover_url: coverImage, 
           slug: bookSlug,
           status: 'PENDING',
         }
@@ -35,7 +37,7 @@ class SummaryController {
       const summary = await Summary.create({
         content: content,
         status: "PENDING",
-        user_id: req.userId,
+        user_id: req.userId, // Depende do authMiddleware
         book_id: book.id,
       });
 
@@ -47,16 +49,15 @@ class SummaryController {
     }
   }
 
-  // A correção final está aqui, na função getMySummaries
   async getMySummaries(req, res) {
     try {
       const summaries = await Summary.findAll({
-        where: { user_id: req.userId },
+        where: { user_id: req.userId }, // Depende do authMiddleware
         include: [
           {
             model: Book,
             as: "book",
-            attributes: ["title", "author", "slug", "cover_url"],
+            attributes: ["title", "author", "slug", "cover_url", "full_cover_url"], // Adicionado full_cover_url
           },
         ],
         order: [["created_at", "DESC"]],
@@ -66,13 +67,9 @@ class SummaryController {
         .map((s) => {
           if (!s.book) return null;
           
-          // <<< A CORREÇÃO FINAL ESTÁ AQUI >>>
-          // Verificamos se a URL da capa é um caminho local do mock.
-          // Se for, enviamos o caminho como está.
-          // Se não for (é um arquivo de upload), usamos o getter 'full_cover_url' para montar a URL completa.
-          const finalCoverUrl = s.book.cover_url && s.book.cover_url.startsWith('/src/assets') 
-            ? s.book.cover_url      // Usa o caminho do mock diretamente
-            : s.book.full_cover_url;  // Usa o getter para a imagem da API/upload
+          // CORREÇÃO: Usamos o full_cover_url do getter do modelo Book
+          // O frontend não precisa mais ter lógica complexa de resolução de URL aqui
+          const finalCoverUrl = s.book.full_cover_url; 
 
           return {
             id: s.id,

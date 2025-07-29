@@ -9,7 +9,7 @@ class Book extends Model {
         title: DataTypes.STRING,
         author: DataTypes.STRING,
         category: DataTypes.STRING,
-        cover_url: DataTypes.STRING, // Este é o campo que armazena só o nome do arquivo
+        cover_url: DataTypes.STRING, // Este é o campo que armazena o caminho/nome do arquivo
         status: DataTypes.STRING,
         slug: DataTypes.STRING,
       },
@@ -22,16 +22,20 @@ class Book extends Model {
         updatedAt: "updated_at",
         modelName: "Book",
 
-        // <<< A SEÇÃO QUE FALTOU VAI AQUI >>>
-        // Adiciona um "campo virtual" que não existe no banco de dados.
         getterMethods: {
           // O nome do campo virtual será 'full_cover_url'
           full_cover_url() {
-            // Se 'cover_url' existir, ele monta a URL completa.
-            // Note que usamos '/files/', que é a mesma rota que você definiu em app.js!
-            return this.cover_url
-              ? `${process.env.APP_URL}/files/${this.cover_url}`
-              : null;
+            if (!this.cover_url) return null;
+
+            // Se a cover_url já começa com '/src/assets', significa que é uma imagem do mock
+            // que o frontend precisa resolver localmente via Vite. O backend não a serve via /files.
+            if (this.cover_url.startsWith('/src/assets')) {
+              return this.cover_url; // Retorna o caminho como está para o frontend
+            }
+
+            // Caso contrário, assume que é um nome de arquivo de upload e constrói a URL completa.
+            // process.env.APP_URL deve ser o URL base do backend (ex: https://api.myreadify.com)
+            return `${process.env.APP_URL}/files/${this.cover_url}`;
           },
         },
       }
@@ -43,6 +47,11 @@ class Book extends Model {
     this.hasMany(models.Summary, {
       foreignKey: 'book_id',
       as: 'summaries',
+    });
+    // Adicionar associação com Review se ainda não estiver aqui, para consistência
+    this.hasMany(models.Review, {
+      foreignKey: 'book_id',
+      as: 'reviews',
     });
   }
 }

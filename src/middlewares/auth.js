@@ -1,7 +1,8 @@
 // Este arquivo é o middleware de autenticação baseado em token.
-// Para o teste sem token, ele não será usado e pode ser desinstalado ou ignorado.
-// Se você o desinstalou, este arquivo pode ser removido.
-/*
+// Reabilitado para que as rotas protegidas funcionem.
+// Para testar sem token (apenas em desenvolvimento), você pode
+// comentar a lógica interna e definir um req.userId fixo para debug.
+
 const jwt = require("jsonwebtoken");
 
 module.exports = (req, res, next) => {
@@ -27,4 +28,3 @@ module.exports = (req, res, next) => {
     return res.status(401).json({ error: "Token inválido." });
   }
 };
-*/

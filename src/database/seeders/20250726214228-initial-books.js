@@ -96,34 +96,41 @@ const booksToSeed = [
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Mapeia os dados dos livros para o formato de inserção na tabela 'books'
     const booksToInsert = booksToSeed.map((book) => ({
       title: book.title,
       author: book.author,
       category: book.category,
-      cover_url: book.coverFilename,
+      // O 'cover_url' aqui armazena apenas o nome do arquivo,
+      // a URL completa será resolvida no frontend ou em um getter do modelo.
+      cover_url: `/src/assets/images/covers/${book.coverFilename}`, // Ajustado para o caminho relativo correto do mockdata
+      // Gera o slug para cada livro
       slug: slugify(book.title, {
         lower: true,
         strict: true,
         remove: /[*+~.()'"!:@]/g,
       }),
-      status: "PENDING",
-      user_id: null,
+      status: "PENDING", // Define o status inicial como PENDING
+      user_id: null, // Livros iniciais não têm user_id
       created_at: new Date(),
       updated_at: new Date(),
     }));
 
+    // Insere os livros na tabela 'books'
     await queryInterface.bulkInsert("books", booksToInsert, {
-      ignoreDuplicates: true, // <-- ignora duplicados (com base na unique key do slug)
+      ignoreDuplicates: true, // Ignora inserções se o slug já existir
     });
   },
 
   down: async (queryInterface, Sequelize) => {
+    // Obtém os títulos dos livros para a exclusão
     const titles = booksToSeed.map((book) => book.title);
+    // Deleta os livros da tabela 'books' com base nos títulos
     await queryInterface.bulkDelete(
       "books",
       {
         title: {
-          [Sequelize.Op.in]: titles,
+          [Sequelize.Op.in]: titles, // Usa o operador IN para deletar múltiplos livros
         },
       },
       {}
