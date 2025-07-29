@@ -7,19 +7,13 @@ class ReviewController {
     const { slug } = req.params;
     const userId = req.userId;
 
-    // Logs para depuração no terminal do seu backend
-    console.log("Backend: Recebida requisição para criar avaliação:", { rating, content, slug, userId });
-
     try {
       if (!rating || !content) {
-        return res
-          .status(400)
-          .json({ error: "Nota e comentário são obrigatórios." });
+        return res.status(400).json({ error: "Nota e comentário são obrigatórios." });
       }
 
       const book = await Book.findOne({ where: { slug } });
       if (!book) {
-        console.log("Backend: Livro com slug não encontrado:", slug);
         return res.status(404).json({ error: "Livro não encontrado." });
       }
 
@@ -27,35 +21,29 @@ class ReviewController {
         where: { user_id: userId, book_id: book.id },
       });
       if (existingReview) {
-        console.log("Backend: Usuário já avaliou este livro.");
         return res.status(409).json({ error: "Você já avaliou este livro." });
       }
 
-      console.log("Backend: Criando avaliação no banco de dados...");
       const review = await Review.create({
         rating,
         content,
         user_id: userId,
         book_id: book.id,
-        slug: book.slug, // Mantendo caso seu modelo precise
+        slug: book.slug,
       });
 
-      console.log("Backend: Avaliação criada com ID:", review.id);
-
-      // Em vez de buscar a avaliação inteira novamente, buscamos apenas os dados do usuário
       const user = await User.findByPk(userId, { attributes: ["id", "name"] });
 
-      // Combinamos os dados da avaliação recém-criada com os dados do usuário
+      // 🔑 Aqui já retornamos o userId
       const responseData = {
         ...review.toJSON(),
+        userId: user.id,
         user: user.toJSON(),
       };
 
-      console.log("Backend: Enviando resposta de sucesso para o frontend.");
       return res.status(201).json(responseData);
-
     } catch (err) {
-      console.error("Backend: ERRO CRÍTICO ao criar avaliação:", err);
+      console.error("Erro ao criar avaliação:", err);
       return res.status(500).json({ error: "Falha ao criar a avaliação." });
     }
   }
@@ -75,7 +63,13 @@ class ReviewController {
         include: { model: User, as: "user", attributes: ["id", "name"] },
       });
 
-      return res.status(200).json(reviews || []);
+      // 🔑 Garantir que cada review tenha userId
+      const formattedReviews = reviews.map((rev) => ({
+        ...rev.toJSON(),
+        userId: rev.user?.id,
+      }));
+
+      return res.status(200).json(formattedReviews);
     } catch (err) {
       console.error("Erro ao listar avaliações:", err);
       return res.status(500).json({ error: "Falha ao listar avaliações." });
@@ -85,7 +79,6 @@ class ReviewController {
   // Listar minhas avaliações
   async showMyReviews(req, res) {
     const userId = req.userId;
-
     try {
       const reviews = await Review.findAll({
         where: { user_id: userId },
@@ -99,7 +92,12 @@ class ReviewController {
         order: [["created_at", "DESC"]],
       });
 
-      return res.json(reviews);
+      const formattedReviews = reviews.map((rev) => ({
+        ...rev.toJSON(),
+        userId,
+      }));
+
+      return res.json(formattedReviews);
     } catch (err) {
       console.error("Erro ao buscar minhas avaliações:", err);
       return res.status(500).json({ error: "Falha ao buscar suas avaliações." });
@@ -130,7 +128,10 @@ class ReviewController {
         include: { model: User, as: "user", attributes: ["id", "name"] },
       });
 
-      return res.json(updatedReview);
+      return res.json({
+        ...updatedReview.toJSON(),
+        userId: userId,
+      });
     } catch (err) {
       console.error("Erro ao atualizar avaliação:", err);
       return res.status(500).json({ error: "Falha ao atualizar a avaliação." });

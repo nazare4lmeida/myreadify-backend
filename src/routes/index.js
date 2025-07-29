@@ -1,4 +1,3 @@
-// src/routes/index.js
 const { Router } = require("express");
 
 const bookRoutes = require("./bookRoutes");
@@ -11,7 +10,6 @@ const checkAuthRoutes = require("./checkAuthRoutes");
 
 const routes = new Router();
 
-// só monta os grupos de rotas, sem duplicar paths
 routes.use(bookRoutes);
 routes.use(reviewRoutes);
 routes.use(authRoutes);
