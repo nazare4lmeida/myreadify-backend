@@ -1,6 +1,6 @@
 const { User } = require('../models');
-const bcrypt = require('bcryptjs'); // Mantido para o hook 'beforeSave' e checkPassword
-// const jwt = require('jsonwebtoken'); // Removido: Não é mais necessário aqui
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken'); // Certifique-se de que 'jsonwebtoken' está instalado
 
 class AuthController {
   async register(req, res) {
@@ -20,10 +20,10 @@ class AuthController {
         role: 'user',
       });
 
-      // A geração de token foi removida daqui
-      // const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
-      //   expiresIn: '40d',
-      // });
+      // Gerar token JWT após o registro
+      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
+        expiresIn: '40d', // Validade do token
+      });
 
       return res.status(201).json({
         user: {
@@ -32,8 +32,8 @@ class AuthController {
           email: user.email,
           role: user.role,
         },
-        // token, // O token não é mais retornado
-        message: 'Registro realizado com sucesso!' // Adicionando uma mensagem de sucesso
+        token, // O token é retornado aqui
+        message: 'Registro realizado com sucesso!'
       });
     } catch (err) {
       console.error("ERRO NO REGISTRO DE USUÁRIO:", err);
@@ -58,6 +58,11 @@ class AuthController {
         role: 'admin',
       });
 
+      // Gerar token JWT após o registro do admin
+      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
+        expiresIn: '40d',
+      });
+
       return res.status(201).json({
         message: 'Administrador criado com sucesso!',
         user: {
@@ -66,6 +71,7 @@ class AuthController {
           email: user.email,
           role: user.role,
         },
+        token, // O token é retornado aqui
       });
     } catch (err) {
       console.error("ERRO DETALHADO AO REGISTRAR ADMIN:", err);
@@ -89,10 +95,10 @@ class AuthController {
         return res.status(401).json({ error: 'Senha incorreta.' });
       }
 
-      // A geração de token foi removida daqui
-      // const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
-      //   expiresIn: '40d',
-      // });
+      // Gerar token JWT após o login
+      const token = jwt.sign({ id: user.id }, process.env.APP_SECRET, {
+        expiresIn: '40d',
+      });
 
       return res.status(200).json({
         user: {
@@ -101,8 +107,8 @@ class AuthController {
           email: user.email,
           role: user.role,
         },
-        // token, // O token não é mais retornado
-        message: 'Login realizado com sucesso!' // Adicionando uma mensagem de sucesso
+        token, // O token é retornado aqui
+        message: 'Login realizado com sucesso!'
       });
     } catch (err) {
       console.error("ERRO NO LOGIN:", err);
