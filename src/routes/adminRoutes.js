@@ -1,33 +1,28 @@
 const { Router } = require("express");
-const authMiddleware = require("../middlewares/auth"); // Reabilitado
-const adminMiddleware = require("../middlewares/admin"); // Reabilitado
-
+const authMiddleware = require("../middlewares/auth");
+const adminMiddleware = require("../middlewares/admin");
 const AdminController = require("../controllers/AdminController");
 const MessageController = require("../controllers/MessageController");
-
-const multer = require('multer'); // Para uploads
-const multerConfig = require('../config/multer'); // Configuração do multer
-const upload = multer(multerConfig); 
+const multer = require('multer'); // Importar multer
+const multerConfig = require('../config/multer'); // Importar a configuração do multer
 
 const router = new Router();
+const upload = multer(multerConfig); // Instanciar o multer
 
-// Aplica os middlewares de autenticação e admin para todas as rotas abaixo
-// ATENÇÃO: Descomente esta linha para reativar a proteção em PROD!
-router.use(authMiddleware, adminMiddleware); 
+// Aplica authMiddleware e adminMiddleware a TODAS as rotas DEFINIDAS ABAIXO NESTE ARQUIVO.
+// Isso garante que apenas administradores autenticados possam acessar essas rotas.
+router.use(authMiddleware);
+router.use(adminMiddleware);
 
-// Rotas de gestão de resumos (acesso admin)
-router.get("/admin/pending-summaries", AdminController.listPendingSummaries);
-router.post("/admin/summaries/:summaryId/approve", AdminController.approveSummary);
-router.delete("/admin/summaries/:summaryId", AdminController.rejectSummary);
-router.get("/admin/all-summaries", AdminController.listAllSummaries);
+// Rotas de administração (sem o prefixo "/admin" aqui, pois será adicionado no routes/index.js)
+router.get("/pending-summaries", AdminController.listPendingSummaries);
+router.post("/summaries/:summaryId/approve", AdminController.approveSummary);
+router.delete("/summaries/:summaryId", AdminController.rejectSummary);
+router.patch("/books/:bookId/cover", upload.single('coverImage'), AdminController.updateBookCover); // Rota para upload de capa
 
-// Rotas de gestão de mensagens (acesso admin)
-router.get("/admin/messages", MessageController.index);
-router.delete("/admin/messages/:messageId", MessageController.destroy);
-router.post("/admin/messages/:messageId/reply", MessageController.reply); // Rota para responder mensagens
+router.get("/all-summaries", AdminController.listAllSummaries);
 
-// CORREÇÃO: Adicionada rota para atualizar capa de livro via admin
-router.patch("/admin/books/:bookId/cover", upload.single('coverImage'), AdminController.updateBookCover);
-
+router.get("/messages", MessageController.index);
+router.delete("/messages/:messageId", MessageController.destroy);
 
 module.exports = router;

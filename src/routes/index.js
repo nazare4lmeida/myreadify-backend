@@ -18,7 +18,7 @@ routes.use(authRoutes);
 // Não coloque 'routes.use(authMiddleware);' aqui globalmente, pois afetaria o login.
 routes.use(bookRoutes);
 routes.use(reviewRoutes);
-routes.use(adminRoutes);
+routes.use("/admin", adminRoutes);
 routes.use(contactRoutes);
 routes.use(summaryRoutes);
 
