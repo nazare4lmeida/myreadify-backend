@@ -6,80 +6,86 @@ class BookController {
     try {
       const books = await Book.findAll({
         where: { status: "COMPLETED" },
-        order: [["title", "ASC"]],
-        // CORREÇÃO: Removido "full_cover_url" dos atributos selecionados.
-        // Getters (campos virtuais) não devem ser listados aqui,
-        // eles são acessados diretamente no objeto do modelo.
-        attributes: ["id", "title", "author", "category", "slug", "cover_url"],
-      });
+        order: [["title", "ASC"]], // CORREÇÃO AQUI: Inclua 'full_cover_url' nos atributos para que seja retornado pela API
+        attributes: [
+          "id",
+          "title",
+          "author",
+          "category",
+          "slug",
+          "cover_url",
+          "full_cover_url",
+        ],
+      }); // Não é mais necessário formatar aqui, o getter 'full_cover_url' já faz o trabalho
 
-      const formattedBooks = books.map(book => ({
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        category: book.category,
-        slug: book.slug,
-        cover_url: book.full_cover_url, // Continua usando o getter aqui, que está correto.
-      }));
-
-      return res.json(formattedBooks);
+      return res.json(books);
     } catch (error) {
       console.error("🔥 ERRO AO BUSCAR LIVROS:", error);
       return res.status(500).json({ error: "Erro ao buscar livros." });
     }
-  }
+  } // A função 'show'
 
-  // <<< A CORREÇÃO FINAL ESTÁ AQUI, NA FUNÇÃO 'show' >>>
   async show(req, res) {
     try {
       const { slug } = req.params;
 
       const book = await Book.findOne({
-        where: { slug: slug, status: 'COMPLETED' },
-        include: [{
-          model: Summary,
-          as: 'summaries',
-          where: { status: 'COMPLETED' },
-          required: false,
-          attributes: ['content'],
-          include: [{
-            model: User,
-            as: 'user',
-            attributes: ['name']
-          }]
-        }],
-        // CORREÇÃO: Removido "full_cover_url" dos atributos selecionados aqui também.
-        // O getter será acessado no objeto 'book' diretamente.
-        attributes: ["id", "title", "author", "category", "slug", "cover_url"],
+        where: { slug: slug, status: "COMPLETED" }, // CORREÇÃO AQUI: Inclua 'full_cover_url' nos atributos do livro principal
+        attributes: [
+          "id",
+          "title",
+          "author",
+          "category",
+          "slug",
+          "cover_url",
+          "full_cover_url",
+        ],
+        include: [
+          {
+            model: Summary,
+            as: "summaries",
+            where: { status: "COMPLETED" },
+            required: false,
+            attributes: ["content"],
+            include: [
+              {
+                model: User,
+                as: "user",
+                attributes: ["name"],
+              },
+            ],
+          },
+        ],
       });
 
       if (!book) {
-        return res.status(404).json({ error: "Livro não encontrado ou aguardando aprovação." });
-      }
-
-      // Aplicamos a mesma lógica inteligente que funcionou antes
-      // Esta lógica usa o getter 'full_cover_url' corretamente.
-      const finalCoverUrl = book.cover_url && book.cover_url.startsWith('/src/assets')
-        ? book.cover_url
-        : book.full_cover_url; 
-
-      const summaryData = book.summaries && book.summaries.length > 0 ? book.summaries[0] : null;
-
+        return res
+          .status(404)
+          .json({ error: "Livro não encontrado ou aguardando aprovação." });
+      } // Nenhuma lógica condicional para cover_url aqui. Apenas use o valor já retornado.
       const formattedBook = {
         id: book.id,
         title: book.title,
         author: book.author,
         category: book.category,
         slug: book.slug,
-        cover_url: finalCoverUrl, 
-        summary: summaryData ? summaryData.content : null,
-        submitted_by: summaryData && summaryData.user ? summaryData.user.name : null,
+        cover_url: book.full_cover_url, // Usar o campo virtual que já é a URL completa
+        summary:
+          book.summaries && book.summaries.length > 0
+            ? book.summaries[0].content
+            : null,
+        submitted_by:
+          book.summaries && book.summaries.length > 0 && book.summaries[0].user
+            ? book.summaries[0].user.name
+            : null,
       };
 
       return res.json(formattedBook);
     } catch (error) {
       console.error("🔥 ERRO AO BUSCAR DETALHES DO LIVRO:", error);
-      return res.status(500).json({ error: "Erro ao buscar detalhes do livro." });
+      return res
+        .status(500)
+        .json({ error: "Erro ao buscar detalhes do livro." });
     }
   }
 }
