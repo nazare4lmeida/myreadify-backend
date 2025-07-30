@@ -39,7 +39,7 @@ myreadify-backend/
 
 Este projeto utiliza o Supabase como banco de dados.
 
-O backend estará disponível em `http://localhost:3000`.
+O backend estará disponível em `http://localhost:3333`.
 
 ---
 
@@ -58,7 +58,7 @@ Authorization: Bearer <seu_token>
 
 Acesse a documentação Swagger para visualizar e testar as rotas da API:
 
-👉 [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+👉 [http://localhost:3333/api-docs](http://localhost:3333/api-docs)
 
 A documentação é gerada automaticamente a partir dos comentários nas rotas (`/src/routes/*.js`).
 
@@ -98,7 +98,7 @@ Inclui:
 Crie um arquivo `.env` na raiz com o seguinte conteúdo:
 
 ```
-PORT=3000
+PORT=3333
 DATABASE_URL=postgresql://myreadify_user:myreadify_password@localhost:5432/myreadify_db
 APP_SECRET=sua_chave_secreta
 ```
@@ -130,4 +130,4 @@ npm start
 
 ### ✅ Pronto! Já está rodando.
 
-Feito por Nazaré Almeida
+**Feito por Nazaré Almeida, estudante de Análise e Desenvolvimento de Sistemas.**
