@@ -12,6 +12,7 @@ const routes = new Router();
 // As rotas de autenticação (login/registro) NUNCA devem ser protegidas por authMiddleware
 // Elas devem vir primeiro ou não ter middlewares aplicados a elas globalmente aqui.
 routes.use(authRoutes);
+routes.use(contactRoutes);
 
 // As rotas abaixo agora dependem do authMiddleware que já foi reabilitado dentro de seus próprios arquivos
 // (e.g., reviewRoutes.js, adminRoutes.js, summaryRoutes.js)
@@ -19,7 +20,6 @@ routes.use(authRoutes);
 routes.use(bookRoutes);
 routes.use(reviewRoutes);
 routes.use("/admin", adminRoutes);
-routes.use(contactRoutes);
 routes.use(summaryRoutes);
 
 module.exports = routes;
