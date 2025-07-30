@@ -9,14 +9,14 @@ const summaryRoutes = require("./summaryRoutes");
 
 const routes = new Router();
 
-// As rotas de autenticação (login/registro) NUNCA devem ser protegidas por authMiddleware
-// Elas devem vir primeiro ou não ter middlewares aplicados a elas globalmente aqui.
+routes.get('/', (req, res) => {
+  res.json({ message: "Bem-vindo(a) à API MyReadify!" });
+});
+
+
 routes.use(authRoutes);
 routes.use(contactRoutes);
 
-// As rotas abaixo agora dependem do authMiddleware que já foi reabilitado dentro de seus próprios arquivos
-// (e.g., reviewRoutes.js, adminRoutes.js, summaryRoutes.js)
-// Não coloque 'routes.use(authMiddleware);' aqui globalmente, pois afetaria o login.
 routes.use(bookRoutes);
 routes.use(reviewRoutes);
 routes.use("/admin", adminRoutes);

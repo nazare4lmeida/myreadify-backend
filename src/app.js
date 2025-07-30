@@ -5,6 +5,7 @@ const path = require("path");
 const { sequelize } = require("./models");
 
 const allRoutes = require("./routes");
+const setupSwagger = require('../swagger'); 
 
 class App {
   constructor() {
@@ -17,8 +18,7 @@ class App {
   }
 
   securityMiddlewares() {
-    // É crucial definir 'trust proxy' antes de qualquer middleware que precise do IP real,
-    // caso o app esteja atrás de um proxy (como em ambientes de hospedagem como Render, Vercel).
+
     this.server.set('trust proxy', true);
 
     // Configuração completa de CORS
@@ -69,6 +69,7 @@ class App {
       }
     });
 
+    // Rota raiz para informações da API
     this.server.get("/", (req, res) => {
       res.json({
         message: "MyReadify API",
@@ -78,6 +79,7 @@ class App {
       });
     });
 
+    setupSwagger(this.server);
     // Todas as rotas da API
     this.server.use("/api", allRoutes);
 
