@@ -11,7 +11,6 @@ class App {
   constructor() {
     this.server = express();
 
-    // Configurações essenciais de segurança e CORS
     this.securityMiddlewares();
     this.middlewares();
     this.routes();
@@ -20,24 +19,36 @@ class App {
   securityMiddlewares() {
     this.server.set("trust proxy", true);
 
-    // Configuração completa de CORS
+    // CONFIGURAÇÃO DE CORS ATUALIZADA PARA MOBILE
     this.server.use(
       cors({
-        origin: [
-          "http://localhost:5173",
-          "https://myreadify-frontend.vercel.app",
-        ],
+        origin: (origin, callback) => {
+          // Permite requisições sem 'origin' (comum em Apps Mobile e ferramentas de teste)
+          if (!origin) return callback(null, true);
+          
+          const allowedOrigins = [
+            "http://localhost:5173",
+            "http://localhost:8081", // Porta padrão do Metro Bundler (Expo)
+            "https://myreadify-frontend.vercel.app",
+          ];
+
+          // Em desenvolvimento, permite qualquer origem para facilitar testes no celular
+          if (process.env.NODE_ENV === "development" || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+          } else {
+            callback(new Error("Not allowed by CORS"));
+          }
+        },
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
         credentials: true,
-        preflightContinue: false,
         optionsSuccessStatus: 204,
       })
     );
   }
 
   middlewares() {
-    this.server.use(express.json({ limit: "10kb" }));
+    this.server.use(express.json({ limit: "10mb" }));
     this.server.use(express.urlencoded({ extended: true }));
 
     this.server.use(
@@ -51,7 +62,6 @@ class App {
   }
 
   routes() {
-    // Rotas de verificação de status
     this.server.get("/health-check", async (req, res) => {
       try {
         await sequelize.authenticate();
@@ -61,42 +71,27 @@ class App {
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
-        console.error("Database connection error:", error);
-        res.status(503).json({
-          status: "unavailable",
-          database: "disconnected",
-          error: error.message,
-        });
+        res.status(503).json({ status: "unavailable", error: error.message });
       }
     });
 
-    // Rota raiz para informações da API
     this.server.get("/", (req, res) => {
-      res.json({
-        message: "MyReadify API",
-        version: "1.0.0",
-        documentation: "/api-docs",
-        status: "operational",
-      });
+      res.json({ message: "MyReadify API", status: "operational" });
     });
 
     setupSwagger(this.server);
-    // Todas as rotas da API
     this.server.use("/api", allRoutes);
 
-    // Middleware de erro global
     this.server.use((err, req, res, next) => {
       console.error("Global error handler:", err);
       res.status(err.status || 500).json({
         error: {
           message: err.message,
-          details:
-            process.env.NODE_ENV === "development" ? err.stack : undefined,
+          details: process.env.NODE_ENV === "development" ? err.stack : undefined,
         },
       });
     });
   }
 }
 
-// Exporta uma instância configurada do servidor
 module.exports = new App().server;
